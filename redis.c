@@ -57,7 +57,7 @@
 
 /* Static server configuration */
 #define REDIS_SERVERPORT        6379    /* TCP port */
-#define REDIS_MAXIDLETIME       (60*5)  /* default client timeout */
+#define REDIS_MAXIDLETIME       (60*5)  /* max idle time. default client timeout */
 #define REDIS_IOBUF_LEN         1024
 #define REDIS_LOADBUF_LEN       1024
 #define REDIS_STATIC_ARGS       4
@@ -87,28 +87,31 @@
 #define REDIS_CMD_DENYOOM       4
 
 /* Object types */
-#define REDIS_STRING 0
-#define REDIS_LIST 1
-#define REDIS_SET 2
-#define REDIS_ZSET 3
-#define REDIS_HASH 4
+#define REDIS_STRING    0
+#define REDIS_LIST      1
+#define REDIS_SET       2
+#define REDIS_ZSET      3
+#define REDIS_HASH      4
 
 /* Objects encoding. Some kind of objects like Strings and Hashes can be
  * internally represented in multiple ways. The 'encoding' field of the object
  * is set to one of this fields for this object. */
-#define REDIS_ENCODING_RAW 0    /* Raw representation */
-#define REDIS_ENCODING_INT 1    /* Encoded as integer */
-#define REDIS_ENCODING_ZIPMAP 2 /* Encoded as zipmap */
-#define REDIS_ENCODING_HT 3     /* Encoded as an hash table */
+#define REDIS_ENCODING_RAW      0   /* Raw representation */
+#define REDIS_ENCODING_INT      1   /* Encoded as integer */
+#define REDIS_ENCODING_ZIPMAP   2   /* Encoded as zipmap */
+#define REDIS_ENCODING_HT       3   /* Encoded as an hash table */
 
 static char* strencoding[] = {
-    "raw", "int", "zipmap", "hashtable"
+    "raw", 
+    "int", 
+    "zipmap", 
+    "hashtable"
 };
 
 /* Object types only used for dumping to disk */
-#define REDIS_EXPIRETIME 253
-#define REDIS_SELECTDB 254
-#define REDIS_EOF 255
+#define REDIS_EXPIRETIME    253
+#define REDIS_SELECTDB      254
+#define REDIS_EOF           255
 
 /* Defines related to the dump file format. To store 32 bits lengths for short
  * keys requires a lot of space, so we check the most significant 2 bits of
@@ -123,32 +126,33 @@ static char* strencoding[] = {
  *
  * Lenghts up to 63 are stored using a single byte, most DB keys, and may
  * values, will fit inside. */
-#define REDIS_RDB_6BITLEN 0
-#define REDIS_RDB_14BITLEN 1
-#define REDIS_RDB_32BITLEN 2
-#define REDIS_RDB_ENCVAL 3
-#define REDIS_RDB_LENERR UINT_MAX
+#define REDIS_RDB_6BITLEN   0
+#define REDIS_RDB_14BITLEN  1
+#define REDIS_RDB_32BITLEN  2
+#define REDIS_RDB_ENCVAL    3
+#define REDIS_RDB_LENERR    UINT_MAX
 
 /* When a length of a string object stored on disk has the first two bits
  * set, the remaining two bits specify a special encoding for the object
  * accordingly to the following defines: */
-#define REDIS_RDB_ENC_INT8 0        /* 8 bit signed integer */
-#define REDIS_RDB_ENC_INT16 1       /* 16 bit signed integer */
-#define REDIS_RDB_ENC_INT32 2       /* 32 bit signed integer */
-#define REDIS_RDB_ENC_LZF 3         /* string compressed with FASTLZ */
+#define REDIS_RDB_ENC_INT8  0   /* 8 bit signed integer */
+#define REDIS_RDB_ENC_INT16 1   /* 16 bit signed integer */
+#define REDIS_RDB_ENC_INT32 2   /* 32 bit signed integer */
+#define REDIS_RDB_ENC_LZF   3   /* string compressed with FASTLZ */
 
 /* Virtual memory object->where field. */
-#define REDIS_VM_MEMORY 0       /* The object is on memory */
-#define REDIS_VM_SWAPPED 1      /* The object is on disk */
-#define REDIS_VM_SWAPPING 2     /* Redis is swapping this object on disk */
-#define REDIS_VM_LOADING 3      /* Redis is loading this object from disk */
+#define REDIS_VM_MEMORY     0      /* The object is on memory */
+#define REDIS_VM_SWAPPED    1      /* The object is on disk */
+#define REDIS_VM_SWAPPING   2      /* Redis is swapping this object on disk */
+#define REDIS_VM_LOADING    3      /* Redis is loading this object from disk */
 
 /* Virtual memory static configuration stuff.
  * Check vmFindContiguousPages() to know more about this magic numbers. */
-#define REDIS_VM_MAX_NEAR_PAGES 65536
-#define REDIS_VM_MAX_RANDOM_JUMP 4096
-#define REDIS_VM_MAX_THREADS 32
-#define REDIS_THREAD_STACK_SIZE (1024*1024*4)
+#define REDIS_VM_MAX_NEAR_PAGES     65536
+#define REDIS_VM_MAX_RANDOM_JUMP    4096
+#define REDIS_VM_MAX_THREADS        32
+#define REDIS_THREAD_STACK_SIZE     (1024*1024*4)
+
 /* The following is the *percentage* of completed I/O jobs to process when the
  * handelr is called. While Virtual Memory I/O operations are performed by
  * threads, this operations must be processed by the main thread when completed
@@ -156,61 +160,62 @@ static char* strencoding[] = {
 #define REDIS_MAX_COMPLETED_JOBS_PROCESSED 1
 
 /* Client flags */
-#define REDIS_SLAVE 1       /* This client is a slave server */
-#define REDIS_MASTER 2      /* This client is a master server */
-#define REDIS_MONITOR 4     /* This client is a slave monitor, see MONITOR */
-#define REDIS_MULTI 8       /* This client is in a MULTI context */
-#define REDIS_BLOCKED 16    /* The client is waiting in a blocking operation */
-#define REDIS_IO_WAIT 32    /* The client is waiting for Virtual Memory I/O */
+#define REDIS_SLAVE     1     /* This client is a slave server */
+#define REDIS_MASTER    2     /* This client is a master server */
+#define REDIS_MONITOR   4     /* This client is a slave monitor, see MONITOR */
+#define REDIS_MULTI     8     /* This client is in a MULTI context */
+#define REDIS_BLOCKED   16    /* The client is waiting in a blocking operation */
+#define REDIS_IO_WAIT   32    /* The client is waiting for Virtual Memory I/O */
 
 /* Slave replication state - slave side */
-#define REDIS_REPL_NONE 0   /* No active replication */
-#define REDIS_REPL_CONNECT 1    /* Must connect to master */
-#define REDIS_REPL_CONNECTED 2  /* Connected to master */
+#define REDIS_REPL_NONE         0    /* No active replication */
+#define REDIS_REPL_CONNECT      1    /* Must connect to master */
+#define REDIS_REPL_CONNECTED    2    /* Connected to master */
 
 /* Slave replication state - from the point of view of master
  * Note that in SEND_BULK and ONLINE state the slave receives new updates
  * in its output queue. In the WAIT_BGSAVE state instead the server is waiting
  * to start the next background saving in order to send updates to it. */
-#define REDIS_REPL_WAIT_BGSAVE_START 3 /* master waits bgsave to start feeding it */
-#define REDIS_REPL_WAIT_BGSAVE_END 4 /* master waits bgsave to start bulk DB transmission */
-#define REDIS_REPL_SEND_BULK 5 /* master is sending the bulk DB */
-#define REDIS_REPL_ONLINE 6 /* bulk DB already transmitted, receive updates */
+#define REDIS_REPL_WAIT_BGSAVE_START    3 /* master waits bgsave to start feeding it */
+#define REDIS_REPL_WAIT_BGSAVE_END      4 /* master waits bgsave to start bulk DB transmission */
+#define REDIS_REPL_SEND_BULK            5 /* master is sending the bulk DB */
+#define REDIS_REPL_ONLINE               6 /* bulk DB already transmitted, receive updates */
 
 /* List related stuff */
 #define REDIS_HEAD 0
 #define REDIS_TAIL 1
 
 /* Sort operations */
-#define REDIS_SORT_GET 0
-#define REDIS_SORT_ASC 1
-#define REDIS_SORT_DESC 2
-#define REDIS_SORTKEY_MAX 1024
+#define REDIS_SORT_GET      0
+#define REDIS_SORT_ASC      1
+#define REDIS_SORT_DESC     2
+#define REDIS_SORTKEY_MAX   1024
 
 /* Log levels */
-#define REDIS_DEBUG 0
-#define REDIS_VERBOSE 1
-#define REDIS_NOTICE 2
-#define REDIS_WARNING 3
+#define REDIS_DEBUG         0
+#define REDIS_VERBOSE       1
+#define REDIS_NOTICE        2
+#define REDIS_WARNING       3
 
 /* Anti-warning macro... */
 #define REDIS_NOTUSED(V) ((void) V)
 
-#define ZSKIPLIST_MAXLEVEL 32 /* Should be enough for 2^32 elements */
-#define ZSKIPLIST_P 0.25      /* Skiplist P = 1/4 */
+#define ZSKIPLIST_MAXLEVEL  32          /* Should be enough for 2^32 elements */
+#define ZSKIPLIST_P         0.25        /* Skiplist P = 1/4 */
 
 /* Append only defines */
-#define APPENDFSYNC_NO 0
-#define APPENDFSYNC_ALWAYS 1
-#define APPENDFSYNC_EVERYSEC 2
+#define APPENDFSYNC_NO          0
+#define APPENDFSYNC_ALWAYS      1
+#define APPENDFSYNC_EVERYSEC    2
 
 /* Hashes related defaults */
-#define REDIS_HASH_MAX_ZIPMAP_ENTRIES 64
-#define REDIS_HASH_MAX_ZIPMAP_VALUE 512
+#define REDIS_HASH_MAX_ZIPMAP_ENTRIES   64
+#define REDIS_HASH_MAX_ZIPMAP_VALUE     512
 
 /* We can print the stacktrace, so our assert is defined this way: */
 #define redisAssert(_e) ((_e)?(void)0 : (_redisAssert(#_e,__FILE__,__LINE__),_exit(1)))
 static void _redisAssert(char *estr, char *file, int line);
+
 
 /*================================= Data types ============================== */
 
@@ -218,9 +223,9 @@ static void _redisAssert(char *estr, char *file, int line);
 
 /* The VM object structure */
 struct redisObjectVM {
-    off_t page;         /* the page at witch the object is stored on disk */
-    off_t usedpages;    /* number of pages used on disk */
-    time_t atime;       /* Last access time */
+    off_t   page;         /* the page at witch the object is stored on disk */
+    off_t   usedpages;    /* number of pages used on disk */
+    time_t  atime;        /* Last access time */
 } vm;
 
 /* The actual Redis Object */
@@ -240,11 +245,9 @@ typedef struct redisObject {
     struct redisObjectVM vm;
 } robj;
 
-/* Macro used to initalize a Redis object allocated on the stack.
- * Note that this macro is taken near the structure definition to make sure
- * we'll update it when the structure is changed, to avoid bugs like
- * bug #85 introduced exactly in this way. */
-#define initStaticStringObject(_var,_ptr) do { \
+/* Macro used to initalize a Redis object allocated on the stack. */
+#define initStaticStringObject(_var, _ptr) \
+do { \
     _var.refcount = 1; \
     _var.type = REDIS_STRING; \
     _var.encoding = REDIS_ENCODING_RAW; \
@@ -272,6 +275,8 @@ typedef struct multiState {
     int count;              /* Total number of MULTI commands */
 } multiState;
 
+
+
 /* With multiplexing we need to take per-clinet state.
  * Clients are taken in a liked list. */
 typedef struct redisClient {
@@ -280,19 +285,23 @@ typedef struct redisClient {
     int dictid;
     sds querybuf;
     robj **argv, **mbargv;
+
     int argc, mbargc;
     int bulklen;            /* bulk read len. -1 if not in bulk read mode */
     int multibulk;          /* multi bulk command format active */
     list *reply;
     int sentlen;
+
     time_t lastinteraction; /* time of the last interaction, used for timeout */
     int flags;              /* REDIS_SLAVE | REDIS_MONITOR | REDIS_MULTI ... */
     int slaveseldb;         /* slave selected db, if this client is a slave */
     int authenticated;      /* when requirepass is non-NULL */
+   
     int replstate;          /* replication state if this is a slave */
     int repldbfd;           /* replication DB file descriptor */
     long repldboff;         /* replication DB file offset */
     off_t repldbsize;       /* replication DB file size */
+    
     multiState mstate;      /* MULTI/EXEC state */
     robj **blockingkeys;    /* The key we are waiting to terminate a blocking
                              * operation such as BLPOP. Otherwise NULL. */
@@ -315,11 +324,13 @@ struct redisServer {
     redisDb *db;
     dict *sharingpool;          /* Poll used for object sharing */
     unsigned int sharingpoolsize;
+
     long long dirty;            /* changes to DB from the last save */
     list *clients;
     list *slaves, *monitors;
     char neterr[ANET_ERR_LEN];
     aeEventLoop *el;
+
     int cronloops;              /* number of times the cron function run */
     list *objfreelist;          /* A list of freed objects to avoid malloc() */
     time_t lastsave;            /* Unix time of last save succeeede */
@@ -327,28 +338,33 @@ struct redisServer {
     time_t stat_starttime;         /* server start time */
     long long stat_numcommands;    /* number of processed commands */
     long long stat_numconnections; /* number of connections received */
+
     /* Configuration */
     int verbosity;
     int glueoutputbuf;
     int maxidletime;
     int dbnum;
     int daemonize;
+
     int appendonly;
     int appendfsync;
     time_t lastfsync;
     int appendfd;
     int appendseldb;
+    
     char *pidfile;
     pid_t bgsavechildpid;
     pid_t bgrewritechildpid;
     sds bgrewritebuf; /* buffer taken by parent during oppend only rewrite */
     struct saveparam *saveparams;
+    
     int saveparamslen;
     char *logfile;
     char *bindaddr;
     char *dbfilename;
     char *appendfilename;
     char *requirepass;
+    
     int shareobjects;
     int rdbcompression;
     /* Replication related */
@@ -356,23 +372,27 @@ struct redisServer {
     char *masterauth;
     char *masterhost;
     int masterport;
+    
     redisClient *master;    /* client that is master for this slave */
     int replstate;
     unsigned int maxclients;
     unsigned long long maxmemory;
     unsigned int blpop_blocked_clients;
     unsigned int vm_blocked_clients;
+    
     /* Sort parameters - qsort_r() is only available under BSD so we
      * have to take this state global, in order to pass it to sortCompare() */
     int sort_desc;
     int sort_alpha;
     int sort_bypattern;
+    
     /* Virtual memory configuration */
     int vm_enabled;
     char *vm_swap_file;
     off_t vm_page_size;
     off_t vm_pages;
     unsigned long long vm_max_memory;
+
     /* Hashes config */
     size_t hash_max_zipmap_entries;
     size_t hash_max_zipmap_value;
@@ -381,6 +401,7 @@ struct redisServer {
     int vm_fd;
     off_t vm_next_page; /* Next probably empty page */
     off_t vm_near_pages; /* Number of pages allocated sequentially */
+    
     unsigned char *vm_bitmap; /* Bitmap of free/used pages */
     time_t unixtime;    /* Unix time sampled every second. */
     /* Virtual memory I/O threads stuff */
@@ -391,10 +412,12 @@ struct redisServer {
     list *io_processing; /* List of VM I/O jobs being processed */
     list *io_processed; /* List of VM I/O jobs already processed */
     list *io_ready_clients; /* Clients ready to be unblocked. All keys loaded */
+    
     pthread_mutex_t io_mutex; /* lock to access io_jobs/io_done/io_thread_job */
     pthread_mutex_t obj_freelist_mutex; /* safe redis objects creation/free */
     pthread_mutex_t io_swapfile_mutex; /* So we can lseek + write */
     pthread_attr_t io_threads_attr; /* attributes for threads creation */
+    
     int io_active_threads; /* Number of running I/O threads */
     int vm_max_threads; /* Max number of I/O threads running at the same time */
     /* Our main thread is blocked on the event loop, locking for sockets ready
@@ -403,6 +426,7 @@ struct redisServer {
      * awake the main thread. The followings are the two pipe FDs. */
     int io_ready_pipe_read;
     int io_ready_pipe_write;
+    
     /* Virtual memory stats */
     unsigned long long vm_stats_used_pages;
     unsigned long long vm_stats_swapped_objects;
@@ -469,12 +493,14 @@ typedef struct zset {
 /* Our shared "common" objects */
 
 struct sharedObjectsStruct {
-    robj *crlf, *ok, *err, *emptybulk, *czero, *cone, *pong, *space,
-    *colon, *nullbulk, *nullmultibulk, *queued,
-    *emptymultibulk, *wrongtypeerr, *nokeyerr, *syntaxerr, *sameobjecterr,
-    *outofrangeerr, *plus,
-    *select0, *select1, *select2, *select3, *select4,
-    *select5, *select6, *select7, *select8, *select9;
+    robj 
+        *crlf, *ok, *err, *emptybulk, *czero, *cone, *pong, *space,
+        *colon, *nullbulk, *nullmultibulk, *queued,
+        *emptymultibulk, *wrongtypeerr, *nokeyerr, *syntaxerr, *sameobjecterr,
+
+        *outofrangeerr, *plus,
+        *select0, *select1, *select2, *select3, *select4,
+        *select5, *select6, *select7, *select8, *select9;
 } shared;
 
 /* Global vars that are actally used as constants. The following double
@@ -484,9 +510,9 @@ struct sharedObjectsStruct {
 static double R_Zero, R_PosInf, R_NegInf, R_Nan;
 
 /* VM threaded I/O request message */
-#define REDIS_IOJOB_LOAD 0          /* Load from disk to memory */
-#define REDIS_IOJOB_PREPARE_SWAP 1  /* Compute needed pages */
-#define REDIS_IOJOB_DO_SWAP 2       /* Swap from memory to disk */
+#define REDIS_IOJOB_LOAD            0       /* Load from disk to memory */
+#define REDIS_IOJOB_PREPARE_SWAP    1       /* Compute needed pages */
+#define REDIS_IOJOB_DO_SWAP         2       /* Swap from memory to disk */
 typedef struct iojob {
     int type;   /* Request type, REDIS_IOJOB_* */
     redisDb *db;/* Redis database */
@@ -505,45 +531,53 @@ static void freeStringObject(robj *o);
 static void freeListObject(robj *o);
 static void freeSetObject(robj *o);
 static void decrRefCount(void *o);
+
 static robj *createObject(int type, void *ptr);
 static void freeClient(redisClient *c);
 static int rdbLoad(char *filename);
 static void addReply(redisClient *c, robj *obj);
 static void addReplySds(redisClient *c, sds s);
 static void incrRefCount(robj *o);
+
 static int rdbSaveBackground(char *filename);
 static robj *createStringObject(char *ptr, size_t len);
 static robj *dupStringObject(robj *o);
 static void replicationFeedSlaves(list *slaves, struct redisCommand *cmd, int dictid, robj **argv, int argc);
 static void feedAppendOnlyFile(struct redisCommand *cmd, int dictid, robj **argv, int argc);
+
 static int syncWithMaster(void);
 static robj *tryObjectSharing(robj *o);
 static int tryObjectEncoding(robj *o);
 static robj *getDecodedObject(robj *o);
 static int removeExpire(redisDb *db, robj *key);
 static int expireIfNeeded(redisDb *db, robj *key);
+
 static int deleteIfVolatile(redisDb *db, robj *key);
 static int deleteIfSwapped(redisDb *db, robj *key);
 static int deleteKey(redisDb *db, robj *key);
 static time_t getExpire(redisDb *db, robj *key);
 static int setExpire(redisDb *db, robj *key, time_t when);
+
 static void updateSlavesWaitingBgsave(int bgsaveerr);
 static void freeMemoryIfNeeded(void);
 static int processCommand(redisClient *c);
 static void setupSigSegvAction(void);
 static void rdbRemoveTempFile(pid_t childpid);
 static void aofRemoveTempFile(pid_t childpid);
+
 static size_t stringObjectLen(robj *o);
 static void processInputBuffer(redisClient *c);
 static zskiplist *zslCreate(void);
 static void zslFree(zskiplist *zsl);
 static void zslInsert(zskiplist *zsl, double score, robj *obj);
+
 static void sendReplyToClientWritev(aeEventLoop *el, int fd, void *privdata, int mask);
 static void initClientMultiState(redisClient *c);
 static void freeClientMultiState(redisClient *c);
 static void queueMultiCommand(redisClient *c, struct redisCommand *cmd);
 static void unblockClientWaitingData(redisClient *c);
 static int handleClientsWaitingListPush(redisClient *c, robj *key, robj *ele);
+
 static void vmInit(void);
 static void vmMarkPagesFree(off_t page, off_t count);
 static robj *vmLoadObject(robj *key);
@@ -551,12 +585,14 @@ static robj *vmPreviewObject(robj *key);
 static int vmSwapOneObjectBlocking(void);
 static int vmSwapOneObjectThreaded(void);
 static int vmCanSwapOut(void);
+
 static int tryFreeOneObjectFromFreelist(void);
 static void acceptHandler(aeEventLoop *el, int fd, void *privdata, int mask);
 static void vmThreadedIOCompletedJob(aeEventLoop *el, int fd, void *privdata, int mask);
 static void vmCancelThreadedIOJob(robj *o);
 static void lockThreadedIO(void);
 static void unlockThreadedIO(void);
+
 static int vmSwapObjectThreaded(robj *key, robj *val, redisDb *db);
 static void freeIOJob(iojob *j);
 static void queueIOJob(iojob *j);
@@ -565,6 +601,7 @@ static robj *vmReadObjectFromSwap(off_t page, int type);
 static void waitEmptyIOJobsQueue(void);
 static void vmReopenSwapFile(void);
 static int vmFreePage(off_t page);
+
 static void zunionInterBlockClientOnSwappedKeys(redisClient *c);
 static int blockClientOnSwappedKeys(struct redisCommand *cmd, redisClient *c);
 static int dontWaitForSwappedKey(redisClient *c, robj *key);
@@ -581,65 +618,77 @@ static void echoCommand(redisClient *c);
 static void setCommand(redisClient *c);
 static void setnxCommand(redisClient *c);
 static void getCommand(redisClient *c);
+
 static void delCommand(redisClient *c);
 static void existsCommand(redisClient *c);
 static void incrCommand(redisClient *c);
 static void decrCommand(redisClient *c);
 static void incrbyCommand(redisClient *c);
+
 static void decrbyCommand(redisClient *c);
 static void selectCommand(redisClient *c);
 static void randomkeyCommand(redisClient *c);
 static void keysCommand(redisClient *c);
 static void dbsizeCommand(redisClient *c);
+
 static void lastsaveCommand(redisClient *c);
 static void saveCommand(redisClient *c);
 static void bgsaveCommand(redisClient *c);
 static void bgrewriteaofCommand(redisClient *c);
 static void shutdownCommand(redisClient *c);
+
 static void moveCommand(redisClient *c);
 static void renameCommand(redisClient *c);
 static void renamenxCommand(redisClient *c);
 static void lpushCommand(redisClient *c);
 static void rpushCommand(redisClient *c);
+
 static void lpopCommand(redisClient *c);
 static void rpopCommand(redisClient *c);
 static void llenCommand(redisClient *c);
 static void lindexCommand(redisClient *c);
 static void lrangeCommand(redisClient *c);
+
 static void ltrimCommand(redisClient *c);
 static void typeCommand(redisClient *c);
 static void lsetCommand(redisClient *c);
 static void saddCommand(redisClient *c);
 static void sremCommand(redisClient *c);
+
 static void smoveCommand(redisClient *c);
 static void sismemberCommand(redisClient *c);
 static void scardCommand(redisClient *c);
 static void spopCommand(redisClient *c);
 static void srandmemberCommand(redisClient *c);
+
 static void sinterCommand(redisClient *c);
 static void sinterstoreCommand(redisClient *c);
 static void sunionCommand(redisClient *c);
 static void sunionstoreCommand(redisClient *c);
 static void sdiffCommand(redisClient *c);
 static void sdiffstoreCommand(redisClient *c);
+
 static void syncCommand(redisClient *c);
 static void flushdbCommand(redisClient *c);
 static void flushallCommand(redisClient *c);
 static void sortCommand(redisClient *c);
 static void lremCommand(redisClient *c);
 static void rpoplpushcommand(redisClient *c);
+
 static void infoCommand(redisClient *c);
 static void mgetCommand(redisClient *c);
 static void monitorCommand(redisClient *c);
 static void expireCommand(redisClient *c);
 static void expireatCommand(redisClient *c);
 static void getsetCommand(redisClient *c);
+
 static void ttlCommand(redisClient *c);
 static void slaveofCommand(redisClient *c);
 static void debugCommand(redisClient *c);
 static void msetCommand(redisClient *c);
 static void msetnxCommand(redisClient *c);
 static void zaddCommand(redisClient *c);
+
 static void zincrbyCommand(redisClient *c);
 static void zrangeCommand(redisClient *c);
 static void zrangebyscoreCommand(redisClient *c);
@@ -649,19 +698,23 @@ static void zcardCommand(redisClient *c);
 static void zremCommand(redisClient *c);
 static void zscoreCommand(redisClient *c);
 static void zremrangebyscoreCommand(redisClient *c);
+
 static void multiCommand(redisClient *c);
 static void execCommand(redisClient *c);
 static void discardCommand(redisClient *c);
 static void blpopCommand(redisClient *c);
 static void brpopCommand(redisClient *c);
+
 static void appendCommand(redisClient *c);
 static void substrCommand(redisClient *c);
 static void zrankCommand(redisClient *c);
 static void zrevrankCommand(redisClient *c);
+
 static void hsetCommand(redisClient *c);
 static void hgetCommand(redisClient *c);
 static void hdelCommand(redisClient *c);
 static void hlenCommand(redisClient *c);
+
 static void zremrangebyrankCommand(redisClient *c);
 static void zunionCommand(redisClient *c);
 static void zinterCommand(redisClient *c);
@@ -675,60 +728,60 @@ static void hexistsCommand(redisClient *c);
 /* Global vars */
 static struct redisServer server; /* server global state */
 static struct redisCommand cmdTable[] = {
-    {"get",getCommand,2,REDIS_CMD_INLINE,NULL,1,1,1},
-    {"set",setCommand,3,REDIS_CMD_BULK|REDIS_CMD_DENYOOM,NULL,0,0,0},
-    {"setnx",setnxCommand,3,REDIS_CMD_BULK|REDIS_CMD_DENYOOM,NULL,0,0,0},
-    {"append",appendCommand,3,REDIS_CMD_BULK|REDIS_CMD_DENYOOM,NULL,1,1,1},
-    {"substr",substrCommand,4,REDIS_CMD_INLINE,NULL,1,1,1},
-    {"del",delCommand,-2,REDIS_CMD_INLINE,NULL,0,0,0},
-    {"exists",existsCommand,2,REDIS_CMD_INLINE,NULL,1,1,1},
-    {"incr",incrCommand,2,REDIS_CMD_INLINE|REDIS_CMD_DENYOOM,NULL,1,1,1},
-    {"decr",decrCommand,2,REDIS_CMD_INLINE|REDIS_CMD_DENYOOM,NULL,1,1,1},
-    {"mget",mgetCommand,-2,REDIS_CMD_INLINE,NULL,1,-1,1},
-    {"rpush",rpushCommand,3,REDIS_CMD_BULK|REDIS_CMD_DENYOOM,NULL,1,1,1},
-    {"lpush",lpushCommand,3,REDIS_CMD_BULK|REDIS_CMD_DENYOOM,NULL,1,1,1},
-    {"rpop",rpopCommand,2,REDIS_CMD_INLINE,NULL,1,1,1},
-    {"lpop",lpopCommand,2,REDIS_CMD_INLINE,NULL,1,1,1},
-    {"brpop",brpopCommand,-3,REDIS_CMD_INLINE,NULL,1,1,1},
-    {"blpop",blpopCommand,-3,REDIS_CMD_INLINE,NULL,1,1,1},
-    {"llen",llenCommand,2,REDIS_CMD_INLINE,NULL,1,1,1},
-    {"lindex",lindexCommand,3,REDIS_CMD_INLINE,NULL,1,1,1},
-    {"lset",lsetCommand,4,REDIS_CMD_BULK|REDIS_CMD_DENYOOM,NULL,1,1,1},
-    {"lrange",lrangeCommand,4,REDIS_CMD_INLINE,NULL,1,1,1},
-    {"ltrim",ltrimCommand,4,REDIS_CMD_INLINE,NULL,1,1,1},
-    {"lrem",lremCommand,4,REDIS_CMD_BULK,NULL,1,1,1},
+    {"get",     getCommand,     2,  REDIS_CMD_INLINE,NULL,1,1,1},
+    {"set",     setCommand,     3,  REDIS_CMD_BULK|REDIS_CMD_DENYOOM,NULL,0,0,0},
+    {"setnx",   setnxCommand,   3,  REDIS_CMD_BULK|REDIS_CMD_DENYOOM,NULL,0,0,0},
+    {"append",  appendCommand,  3,  REDIS_CMD_BULK|REDIS_CMD_DENYOOM,NULL,1,1,1},
+    {"substr",  substrCommand,  4,  REDIS_CMD_INLINE,NULL,1,1,1},
+    {"del",     delCommand,    -2,  REDIS_CMD_INLINE,NULL,0,0,0},
+    {"exists",  existsCommand,2,REDIS_CMD_INLINE,NULL,1,1,1},
+    {"incr",    incrCommand,2,REDIS_CMD_INLINE|REDIS_CMD_DENYOOM,NULL,1,1,1},
+    {"decr",    decrCommand,2,REDIS_CMD_INLINE|REDIS_CMD_DENYOOM,NULL,1,1,1},
+    {"mget",    mgetCommand,-2,REDIS_CMD_INLINE,NULL,1,-1,1},
+    {"rpush",   rpushCommand,3,REDIS_CMD_BULK|REDIS_CMD_DENYOOM,NULL,1,1,1},
+    {"lpush",   lpushCommand,3,REDIS_CMD_BULK|REDIS_CMD_DENYOOM,NULL,1,1,1},
+    {"rpop",    rpopCommand,2,REDIS_CMD_INLINE,NULL,1,1,1},
+    {"lpop",    lpopCommand,2,REDIS_CMD_INLINE,NULL,1,1,1},
+    {"brpop",   brpopCommand,-3,REDIS_CMD_INLINE,NULL,1,1,1},
+    {"blpop",   blpopCommand,-3,REDIS_CMD_INLINE,NULL,1,1,1},
+    {"llen",    llenCommand,2,REDIS_CMD_INLINE,NULL,1,1,1},
+    {"lindex",  lindexCommand,3,REDIS_CMD_INLINE,NULL,1,1,1},
+    {"lset",    lsetCommand,4,REDIS_CMD_BULK|REDIS_CMD_DENYOOM,NULL,1,1,1},
+    {"lrange",  lrangeCommand,4,REDIS_CMD_INLINE,NULL,1,1,1},
+    {"ltrim",   ltrimCommand,4,REDIS_CMD_INLINE,NULL,1,1,1},
+    {"lrem",    lremCommand,4,REDIS_CMD_BULK,NULL,1,1,1},
     {"rpoplpush",rpoplpushcommand,3,REDIS_CMD_INLINE|REDIS_CMD_DENYOOM,NULL,1,2,1},
-    {"sadd",saddCommand,3,REDIS_CMD_BULK|REDIS_CMD_DENYOOM,NULL,1,1,1},
-    {"srem",sremCommand,3,REDIS_CMD_BULK,NULL,1,1,1},
-    {"smove",smoveCommand,4,REDIS_CMD_BULK,NULL,1,2,1},
+    {"sadd",    saddCommand,3,REDIS_CMD_BULK|REDIS_CMD_DENYOOM,NULL,1,1,1},
+    {"srem",    sremCommand,3,REDIS_CMD_BULK,NULL,1,1,1},
+    {"smove",   smoveCommand,4,REDIS_CMD_BULK,NULL,1,2,1},
     {"sismember",sismemberCommand,3,REDIS_CMD_BULK,NULL,1,1,1},
-    {"scard",scardCommand,2,REDIS_CMD_INLINE,NULL,1,1,1},
-    {"spop",spopCommand,2,REDIS_CMD_INLINE,NULL,1,1,1},
+    {"scard",   scardCommand,2,REDIS_CMD_INLINE,NULL,1,1,1},
+    {"spop",    spopCommand,2,REDIS_CMD_INLINE,NULL,1,1,1},
     {"srandmember",srandmemberCommand,2,REDIS_CMD_INLINE,NULL,1,1,1},
-    {"sinter",sinterCommand,-2,REDIS_CMD_INLINE|REDIS_CMD_DENYOOM,NULL,1,-1,1},
+    {"sinter",  sinterCommand,-2,REDIS_CMD_INLINE|REDIS_CMD_DENYOOM,NULL,1,-1,1},
     {"sinterstore",sinterstoreCommand,-3,REDIS_CMD_INLINE|REDIS_CMD_DENYOOM,NULL,2,-1,1},
-    {"sunion",sunionCommand,-2,REDIS_CMD_INLINE|REDIS_CMD_DENYOOM,NULL,1,-1,1},
+    {"sunion",  sunionCommand,-2,REDIS_CMD_INLINE|REDIS_CMD_DENYOOM,NULL,1,-1,1},
     {"sunionstore",sunionstoreCommand,-3,REDIS_CMD_INLINE|REDIS_CMD_DENYOOM,NULL,2,-1,1},
-    {"sdiff",sdiffCommand,-2,REDIS_CMD_INLINE|REDIS_CMD_DENYOOM,NULL,1,-1,1},
+    {"sdiff",   sdiffCommand,-2,REDIS_CMD_INLINE|REDIS_CMD_DENYOOM,NULL,1,-1,1},
     {"sdiffstore",sdiffstoreCommand,-3,REDIS_CMD_INLINE|REDIS_CMD_DENYOOM,NULL,2,-1,1},
     {"smembers",sinterCommand,2,REDIS_CMD_INLINE,NULL,1,1,1},
-    {"zadd",zaddCommand,4,REDIS_CMD_BULK|REDIS_CMD_DENYOOM,NULL,1,1,1},
-    {"zincrby",zincrbyCommand,4,REDIS_CMD_BULK|REDIS_CMD_DENYOOM,NULL,1,1,1},
-    {"zrem",zremCommand,3,REDIS_CMD_BULK,NULL,1,1,1},
+    {"zadd",    zaddCommand,4,REDIS_CMD_BULK|REDIS_CMD_DENYOOM,NULL,1,1,1},
+    {"zincrby", zincrbyCommand,4,REDIS_CMD_BULK|REDIS_CMD_DENYOOM,NULL,1,1,1},
+    {"zrem",    zremCommand,3,REDIS_CMD_BULK,NULL,1,1,1},
     {"zremrangebyscore",zremrangebyscoreCommand,4,REDIS_CMD_INLINE,NULL,1,1,1},
     {"zremrangebyrank",zremrangebyrankCommand,4,REDIS_CMD_INLINE,NULL,1,1,1},
-    {"zunion",zunionCommand,-4,REDIS_CMD_INLINE|REDIS_CMD_DENYOOM,zunionInterBlockClientOnSwappedKeys,0,0,0},
-    {"zinter",zinterCommand,-4,REDIS_CMD_INLINE|REDIS_CMD_DENYOOM,zunionInterBlockClientOnSwappedKeys,0,0,0},
-    {"zrange",zrangeCommand,-4,REDIS_CMD_INLINE,NULL,1,1,1},
+    {"zunion",  zunionCommand,-4,REDIS_CMD_INLINE|REDIS_CMD_DENYOOM,zunionInterBlockClientOnSwappedKeys,0,0,0},
+    {"zinter",  zinterCommand,-4,REDIS_CMD_INLINE|REDIS_CMD_DENYOOM,zunionInterBlockClientOnSwappedKeys,0,0,0},
+    {"zrange",  zrangeCommand,-4,REDIS_CMD_INLINE,NULL,1,1,1},
     {"zrangebyscore",zrangebyscoreCommand,-4,REDIS_CMD_INLINE,NULL,1,1,1},
-    {"zcount",zcountCommand,4,REDIS_CMD_INLINE,NULL,1,1,1},
+    {"zcount",  zcountCommand,4,REDIS_CMD_INLINE,NULL,1,1,1},
     {"zrevrange",zrevrangeCommand,-4,REDIS_CMD_INLINE,NULL,1,1,1},
-    {"zcard",zcardCommand,2,REDIS_CMD_INLINE,NULL,1,1,1},
-    {"zscore",zscoreCommand,3,REDIS_CMD_BULK|REDIS_CMD_DENYOOM,NULL,1,1,1},
-    {"zrank",zrankCommand,3,REDIS_CMD_BULK,NULL,1,1,1},
+    {"zcard",   zcardCommand,2,REDIS_CMD_INLINE,NULL,1,1,1},
+    {"zscore",  zscoreCommand,3,REDIS_CMD_BULK|REDIS_CMD_DENYOOM,NULL,1,1,1},
+    {"zrank",   zrankCommand,3,REDIS_CMD_BULK,NULL,1,1,1},
     {"zrevrank",zrevrankCommand,3,REDIS_CMD_BULK,NULL,1,1,1},
-    {"hset",hsetCommand,4,REDIS_CMD_BULK|REDIS_CMD_DENYOOM,NULL,1,1,1},
-    {"hget",hgetCommand,3,REDIS_CMD_BULK,NULL,1,1,1},
+    {"hset",    hsetCommand,4,REDIS_CMD_BULK|REDIS_CMD_DENYOOM,NULL,1,1,1},
+    {"hget",    hgetCommand,3,REDIS_CMD_BULK,NULL,1,1,1},
     {"hdel",hdelCommand,3,REDIS_CMD_BULK,NULL,1,1,1},
     {"hlen",hlenCommand,2,REDIS_CMD_INLINE,NULL,1,1,1},
     {"hkeys",hkeysCommand,2,REDIS_CMD_INLINE,NULL,1,1,1},
@@ -779,148 +832,12 @@ static struct redisCommand cmdTable[] = {
 int stringmatchlen(const char *pattern, int patternLen,
         const char *string, int stringLen, int nocase)
 {
-    while(patternLen) {
-        switch(pattern[0]) {
-        case '*':
-            while (pattern[1] == '*') {
-                pattern++;
-                patternLen--;
-            }
-            if (patternLen == 1)
-                return 1; /* match */
-            while(stringLen) {
-                if (stringmatchlen(pattern+1, patternLen-1,
-                            string, stringLen, nocase))
-                    return 1; /* match */
-                string++;
-                stringLen--;
-            }
-            return 0; /* no match */
-            break;
-        case '?':
-            if (stringLen == 0)
-                return 0; /* no match */
-            string++;
-            stringLen--;
-            break;
-        case '[':
-        {
-            int not, match;
-
-            pattern++;
-            patternLen--;
-            not = pattern[0] == '^';
-            if (not) {
-                pattern++;
-                patternLen--;
-            }
-            match = 0;
-            while(1) {
-                if (pattern[0] == '\\') {
-                    pattern++;
-                    patternLen--;
-                    if (pattern[0] == string[0])
-                        match = 1;
-                } else if (pattern[0] == ']') {
-                    break;
-                } else if (patternLen == 0) {
-                    pattern--;
-                    patternLen++;
-                    break;
-                } else if (pattern[1] == '-' && patternLen >= 3) {
-                    int start = pattern[0];
-                    int end = pattern[2];
-                    int c = string[0];
-                    if (start > end) {
-                        int t = start;
-                        start = end;
-                        end = t;
-                    }
-                    if (nocase) {
-                        start = tolower(start);
-                        end = tolower(end);
-                        c = tolower(c);
-                    }
-                    pattern += 2;
-                    patternLen -= 2;
-                    if (c >= start && c <= end)
-                        match = 1;
-                } else {
-                    if (!nocase) {
-                        if (pattern[0] == string[0])
-                            match = 1;
-                    } else {
-                        if (tolower((int)pattern[0]) == tolower((int)string[0]))
-                            match = 1;
-                    }
-                }
-                pattern++;
-                patternLen--;
-            }
-            if (not)
-                match = !match;
-            if (!match)
-                return 0; /* no match */
-            string++;
-            stringLen--;
-            break;
-        }
-        case '\\':
-            if (patternLen >= 2) {
-                pattern++;
-                patternLen--;
-            }
-            /* fall through */
-        default:
-            if (!nocase) {
-                if (pattern[0] != string[0])
-                    return 0; /* no match */
-            } else {
-                if (tolower((int)pattern[0]) != tolower((int)string[0]))
-                    return 0; /* no match */
-            }
-            string++;
-            stringLen--;
-            break;
-        }
-        pattern++;
-        patternLen--;
-        if (stringLen == 0) {
-            while(*pattern == '*') {
-                pattern++;
-                patternLen--;
-            }
-            break;
-        }
-    }
-    if (patternLen == 0 && stringLen == 0)
-        return 1;
+    // ...
     return 0;
 }
 
 static void redisLog(int level, const char *fmt, ...) {
-    va_list ap;
-    FILE *fp;
-
-    fp = (server.logfile == NULL) ? stdout : fopen(server.logfile,"a");
-    if (!fp) return;
-
-    va_start(ap, fmt);
-    if (level >= server.verbosity) {
-        char *c = ".-*#";
-        char buf[64];
-        time_t now;
-
-        now = time(NULL);
-        strftime(buf,64,"%d %b %H:%M:%S",localtime(&now));
-        fprintf(fp,"[%d] %s %c ",(int)getpid(),buf,c[level]);
-        vfprintf(fp, fmt, ap);
-        fprintf(fp,"\n");
-        fflush(fp);
-    }
-    va_end(ap);
-
-    if (server.logfile) fclose(fp);
+    // ...    
 }
 
 /*====================== Hash table type implementation  ==================== */
