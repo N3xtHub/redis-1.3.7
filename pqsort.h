@@ -1,9 +1,7 @@
 /* The following is the NetBSD libc qsort implementation modified in order to
  * support partial sorting of ranges for Redis.
  *
- * Copyright(C) 2009-2010 Salvatore Sanfilippo. All rights reserved.
- *
- * See the pqsort.c file for the original copyright notice. */
+ */
 
 #ifndef __PQSORT_H
 #define __PQSORT_H
