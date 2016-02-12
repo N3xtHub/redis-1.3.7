@@ -408,15 +408,15 @@ struct redisServer {
     /* An I/O thread process an element taken from the io_jobs queue and
      * put the result of the operation in the io_done list. While the
      * job is being processed, it's put on io_processing queue. */
-    list *io_newjobs; /* List of VM I/O jobs yet to be processed */
-    list *io_processing; /* List of VM I/O jobs being processed */
-    list *io_processed; /* List of VM I/O jobs already processed */
+    list *io_newjobs;       /* List of VM I/O jobs yet to be processed */
+    list *io_processing;    /* List of VM I/O jobs being processed */
+    list *io_processed;     /* List of VM I/O jobs already processed */
     list *io_ready_clients; /* Clients ready to be unblocked. All keys loaded */
     
-    pthread_mutex_t io_mutex; /* lock to access io_jobs/io_done/io_thread_job */
+    pthread_mutex_t io_mutex;           /* lock to access io_jobs/io_done/io_thread_job */
     pthread_mutex_t obj_freelist_mutex; /* safe redis objects creation/free */
-    pthread_mutex_t io_swapfile_mutex; /* So we can lseek + write */
-    pthread_attr_t io_threads_attr; /* attributes for threads creation */
+    pthread_mutex_t io_swapfile_mutex;  /* So we can lseek + write */
+    pthread_attr_t io_threads_attr;     /* attributes for threads creation */
     
     int io_active_threads; /* Number of running I/O threads */
     int vm_max_threads; /* Max number of I/O threads running at the same time */
@@ -728,20 +728,20 @@ static void hexistsCommand(redisClient *c);
 /* Global vars */
 static struct redisServer server; /* server global state */
 static struct redisCommand cmdTable[] = {
-    {"get",     getCommand,     2,  REDIS_CMD_INLINE,NULL,1,1,1},
-    {"set",     setCommand,     3,  REDIS_CMD_BULK|REDIS_CMD_DENYOOM,NULL,0,0,0},
-    {"setnx",   setnxCommand,   3,  REDIS_CMD_BULK|REDIS_CMD_DENYOOM,NULL,0,0,0},
-    {"append",  appendCommand,  3,  REDIS_CMD_BULK|REDIS_CMD_DENYOOM,NULL,1,1,1},
-    {"substr",  substrCommand,  4,  REDIS_CMD_INLINE,NULL,1,1,1},
-    {"del",     delCommand,    -2,  REDIS_CMD_INLINE,NULL,0,0,0},
-    {"exists",  existsCommand,2,REDIS_CMD_INLINE,NULL,1,1,1},
-    {"incr",    incrCommand,2,REDIS_CMD_INLINE|REDIS_CMD_DENYOOM,NULL,1,1,1},
-    {"decr",    decrCommand,2,REDIS_CMD_INLINE|REDIS_CMD_DENYOOM,NULL,1,1,1},
-    {"mget",    mgetCommand,-2,REDIS_CMD_INLINE,NULL,1,-1,1},
-    {"rpush",   rpushCommand,3,REDIS_CMD_BULK|REDIS_CMD_DENYOOM,NULL,1,1,1},
-    {"lpush",   lpushCommand,3,REDIS_CMD_BULK|REDIS_CMD_DENYOOM,NULL,1,1,1},
-    {"rpop",    rpopCommand,2,REDIS_CMD_INLINE,NULL,1,1,1},
-    {"lpop",    lpopCommand,2,REDIS_CMD_INLINE,NULL,1,1,1},
+    {"get",     get,     2,  REDIS_CMD_INLINE,NULL,1,1,1},
+    {"set",     set,     3,  REDIS_CMD_BULK|REDIS_CMD_DENYOOM,NULL,0,0,0},
+    {"setnx",   setnx,   3,  REDIS_CMD_BULK|REDIS_CMD_DENYOOM,NULL,0,0,0},
+    {"append",  append,  3,  REDIS_CMD_BULK|REDIS_CMD_DENYOOM,NULL,1,1,1},
+    {"substr",  substr,  4,  REDIS_CMD_INLINE,NULL,1,1,1},
+    {"del",     del,    -2,  REDIS_CMD_INLINE,NULL,0,0,0},
+    {"exists",  exists,  2,  REDIS_CMD_INLINE,NULL,1,1,1},
+    {"incr",    incrCommand,    2,  REDIS_CMD_INLINE|REDIS_CMD_DENYOOM,NULL,1,1,1},
+    {"decr",    decrCommand,    2,  REDIS_CMD_INLINE|REDIS_CMD_DENYOOM,NULL,1,1,1},
+    {"mget",    mgetCommand,   -2,  REDIS_CMD_INLINE,NULL,1,-1,1},
+    {"rpush",   rpushCommand,   3,  REDIS_CMD_BULK|REDIS_CMD_DENYOOM,NULL,1,1,1},
+    {"lpush",   lpushCommand,   3,  REDIS_CMD_BULK|REDIS_CMD_DENYOOM,NULL,1,1,1},
+    {"rpop",    rpopCommand,    2,  REDIS_CMD_INLINE,NULL,1,1,1},
+    {"lpop",    lpopCommand,    2,  REDIS_CMD_INLINE,NULL,1,1,1},
     {"brpop",   brpopCommand,-3,REDIS_CMD_INLINE,NULL,1,1,1},
     {"blpop",   blpopCommand,-3,REDIS_CMD_INLINE,NULL,1,1,1},
     {"llen",    llenCommand,2,REDIS_CMD_INLINE,NULL,1,1,1},
