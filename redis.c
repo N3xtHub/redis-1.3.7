@@ -782,47 +782,47 @@ static struct redisCommand cmdTable[] = {
     {"zrevrank",zrevrankCommand,3,REDIS_CMD_BULK,NULL,1,1,1},
     {"hset",    hsetCommand,4,REDIS_CMD_BULK|REDIS_CMD_DENYOOM,NULL,1,1,1},
     {"hget",    hgetCommand,3,REDIS_CMD_BULK,NULL,1,1,1},
-    {"hdel",hdelCommand,3,REDIS_CMD_BULK,NULL,1,1,1},
-    {"hlen",hlenCommand,2,REDIS_CMD_INLINE,NULL,1,1,1},
-    {"hkeys",hkeysCommand,2,REDIS_CMD_INLINE,NULL,1,1,1},
-    {"hvals",hvalsCommand,2,REDIS_CMD_INLINE,NULL,1,1,1},
-    {"hgetall",hgetallCommand,2,REDIS_CMD_INLINE,NULL,1,1,1},
-    {"hexists",hexistsCommand,3,REDIS_CMD_BULK,NULL,1,1,1},
-    {"incrby",incrbyCommand,3,REDIS_CMD_INLINE|REDIS_CMD_DENYOOM,NULL,1,1,1},
-    {"decrby",decrbyCommand,3,REDIS_CMD_INLINE|REDIS_CMD_DENYOOM,NULL,1,1,1},
-    {"getset",getsetCommand,3,REDIS_CMD_BULK|REDIS_CMD_DENYOOM,NULL,1,1,1},
-    {"mset",msetCommand,-3,REDIS_CMD_BULK|REDIS_CMD_DENYOOM,NULL,1,-1,2},
-    {"msetnx",msetnxCommand,-3,REDIS_CMD_BULK|REDIS_CMD_DENYOOM,NULL,1,-1,2},
+    {"hdel",    hdelCommand,3,REDIS_CMD_BULK,NULL,1,1,1},
+    {"hlen",    hlenCommand,2,REDIS_CMD_INLINE,NULL,1,1,1},
+    {"hkeys",   hkeysCommand,2,REDIS_CMD_INLINE,NULL,1,1,1},
+    {"hvals",   hvalsCommand,2,REDIS_CMD_INLINE,NULL,1,1,1},
+    {"hgetall", hgetallCommand,2,REDIS_CMD_INLINE,NULL,1,1,1},
+    {"hexists", hexistsCommand,3,REDIS_CMD_BULK,NULL,1,1,1},
+    {"incrby",  incrbyCommand,3,REDIS_CMD_INLINE|REDIS_CMD_DENYOOM,NULL,1,1,1},
+    {"decrby",  decrbyCommand,3,REDIS_CMD_INLINE|REDIS_CMD_DENYOOM,NULL,1,1,1},
+    {"getset",  getsetCommand,3,REDIS_CMD_BULK|REDIS_CMD_DENYOOM,NULL,1,1,1},
+    {"mset",    msetCommand,-3,REDIS_CMD_BULK|REDIS_CMD_DENYOOM,NULL,1,-1,2},
+    {"msetnx",  msetnxCommand,-3,REDIS_CMD_BULK|REDIS_CMD_DENYOOM,NULL,1,-1,2},
     {"randomkey",randomkeyCommand,1,REDIS_CMD_INLINE,NULL,0,0,0},
-    {"select",selectCommand,2,REDIS_CMD_INLINE,NULL,0,0,0},
-    {"move",moveCommand,3,REDIS_CMD_INLINE,NULL,1,1,1},
-    {"rename",renameCommand,3,REDIS_CMD_INLINE,NULL,1,1,1},
+    {"select",  selectCommand,2,REDIS_CMD_INLINE,NULL,0,0,0},
+    {"move",    moveCommand,3,REDIS_CMD_INLINE,NULL,1,1,1},
+    {"rename",  renameCommand,3,REDIS_CMD_INLINE,NULL,1,1,1},
     {"renamenx",renamenxCommand,3,REDIS_CMD_INLINE,NULL,1,1,1},
-    {"expire",expireCommand,3,REDIS_CMD_INLINE,NULL,0,0,0},
+    {"expire",  expireCommand,3,REDIS_CMD_INLINE,NULL,0,0,0},
     {"expireat",expireatCommand,3,REDIS_CMD_INLINE,NULL,0,0,0},
-    {"keys",keysCommand,2,REDIS_CMD_INLINE,NULL,0,0,0},
-    {"dbsize",dbsizeCommand,1,REDIS_CMD_INLINE,NULL,0,0,0},
-    {"auth",authCommand,2,REDIS_CMD_INLINE,NULL,0,0,0},
-    {"ping",pingCommand,1,REDIS_CMD_INLINE,NULL,0,0,0},
-    {"echo",echoCommand,2,REDIS_CMD_BULK,NULL,0,0,0},
-    {"save",saveCommand,1,REDIS_CMD_INLINE,NULL,0,0,0},
-    {"bgsave",bgsaveCommand,1,REDIS_CMD_INLINE,NULL,0,0,0},
+    {"keys",    keysCommand,2,REDIS_CMD_INLINE,NULL,0,0,0},
+    {"dbsize",  dbsizeCommand,1,REDIS_CMD_INLINE,NULL,0,0,0},
+    {"auth",    authCommand,2,REDIS_CMD_INLINE,NULL,0,0,0},
+    {"ping",    pingCommand,1,REDIS_CMD_INLINE,NULL,0,0,0},
+    {"echo",    echoCommand,2,REDIS_CMD_BULK,NULL,0,0,0},
+    {"save",    saveCommand,1,REDIS_CMD_INLINE,NULL,0,0,0},
+    {"bgsave",  bgsaveCommand,1,REDIS_CMD_INLINE,NULL,0,0,0},
     {"bgrewriteaof",bgrewriteaofCommand,1,REDIS_CMD_INLINE,NULL,0,0,0},
     {"shutdown",shutdownCommand,1,REDIS_CMD_INLINE,NULL,0,0,0},
     {"lastsave",lastsaveCommand,1,REDIS_CMD_INLINE,NULL,0,0,0},
-    {"type",typeCommand,2,REDIS_CMD_INLINE,NULL,1,1,1},
-    {"multi",multiCommand,1,REDIS_CMD_INLINE,NULL,0,0,0},
-    {"exec",execCommand,1,REDIS_CMD_INLINE,NULL,0,0,0},
-    {"discard",discardCommand,1,REDIS_CMD_INLINE,NULL,0,0,0},
-    {"sync",syncCommand,1,REDIS_CMD_INLINE,NULL,0,0,0},
-    {"flushdb",flushdbCommand,1,REDIS_CMD_INLINE,NULL,0,0,0},
+    {"type",    typeCommand,2,REDIS_CMD_INLINE,NULL,1,1,1},
+    {"multi",   multiCommand,1,REDIS_CMD_INLINE,NULL,0,0,0},
+    {"exec",    execCommand,1,REDIS_CMD_INLINE,NULL,0,0,0},
+    {"discard", discardCommand,1,REDIS_CMD_INLINE,NULL,0,0,0},
+    {"sync",    syncCommand,1,REDIS_CMD_INLINE,NULL,0,0,0},
+    {"flushdb", flushdbCommand,1,REDIS_CMD_INLINE,NULL,0,0,0},
     {"flushall",flushallCommand,1,REDIS_CMD_INLINE,NULL,0,0,0},
-    {"sort",sortCommand,-2,REDIS_CMD_INLINE|REDIS_CMD_DENYOOM,NULL,1,1,1},
-    {"info",infoCommand,1,REDIS_CMD_INLINE,NULL,0,0,0},
-    {"monitor",monitorCommand,1,REDIS_CMD_INLINE,NULL,0,0,0},
-    {"ttl",ttlCommand,2,REDIS_CMD_INLINE,NULL,1,1,1},
-    {"slaveof",slaveofCommand,3,REDIS_CMD_INLINE,NULL,0,0,0},
-    {"debug",debugCommand,-2,REDIS_CMD_INLINE,NULL,0,0,0},
+    {"sort",    sortCommand,-2,REDIS_CMD_INLINE|REDIS_CMD_DENYOOM,NULL,1,1,1},
+    {"info",    infoCommand,1,REDIS_CMD_INLINE,NULL,0,0,0},
+    {"monitor", monitorCommand,1,REDIS_CMD_INLINE,NULL,0,0,0},
+    {"ttl",     ttlCommand,2,REDIS_CMD_INLINE,NULL,1,1,1},
+    {"slaveof", slaveofCommand,3,REDIS_CMD_INLINE,NULL,0,0,0},
+    {"debug",   debugCommand,-2,REDIS_CMD_INLINE,NULL,0,0,0},
     {NULL,NULL,0,0,NULL,0,0,0}
 };
 
@@ -848,13 +848,11 @@ static void redisLog(int level, const char *fmt, ...) {
 
 static void dictVanillaFree(void *privdata, void *val)
 {
-    DICT_NOTUSED(privdata);
     zfree(val);
 }
 
 static void dictListDestructor(void *privdata, void *val)
 {
-    DICT_NOTUSED(privdata);
     listRelease((list*)val);
 }
 
@@ -862,8 +860,7 @@ static int sdsDictKeyCompare(void *privdata, const void *key1,
         const void *key2)
 {
     int l1,l2;
-    DICT_NOTUSED(privdata);
-
+ 
     l1 = sdslen((sds)key1);
     l2 = sdslen((sds)key2);
     if (l1 != l2) return 0;
@@ -872,9 +869,6 @@ static int sdsDictKeyCompare(void *privdata, const void *key1,
 
 static void dictRedisObjectDestructor(void *privdata, void *val)
 {
-    DICT_NOTUSED(privdata);
-
-    if (val == NULL) return; /* Values of swapped out keys as set to NULL */
     decrRefCount(val);
 }
 
@@ -1023,7 +1017,8 @@ static void closeTimedoutClients(void) {
         {
             redisLog(REDIS_VERBOSE,"Closing idle client");
             freeClient(c);
-        } else if (c->flags & REDIS_BLOCKED) {
+        } 
+        else if (c->flags & REDIS_BLOCKED) {
             if (c->blockingto != 0 && c->blockingto < now) {
                 addReply(c,shared.nullmultibulk);
                 unblockClientWaitingData(c);
@@ -1048,10 +1043,9 @@ static void tryResizeHashTables(void) {
 
     for (j = 0; j < server.dbnum; j++) {
         if (htNeedsResize(server.db[j].dict)) {
-            redisLog(REDIS_VERBOSE,"The hash table %d is too sparse, resize it...",j);
             dictResize(server.db[j].dict);
-            redisLog(REDIS_VERBOSE,"Hash table %d resized.",j);
         }
+
         if (htNeedsResize(server.db[j].expires))
             dictResize(server.db[j].expires);
     }
@@ -1063,8 +1057,6 @@ void backgroundSaveDoneHandler(int statloc) {
     int bysignal = WIFSIGNALED(statloc);
 
     if (!bysignal && exitcode == 0) {
-        redisLog(REDIS_NOTICE,
-            "Background saving terminated with success");
         server.dirty = 0;
         server.lastsave = time(NULL);
     } else if (!bysignal && exitcode != 0) {
@@ -1143,10 +1135,7 @@ cleanup:
 
 static int serverCron(struct aeEventLoop *eventLoop, long long id, void *clientData) {
     int j, loops = server.cronloops++;
-    REDIS_NOTUSED(eventLoop);
-    REDIS_NOTUSED(id);
-    REDIS_NOTUSED(clientData);
-
+  
     /* We take a cached value of the unix time in the global state because
      * with virtual memory and aging there is to store the current time
      * in objects at every object access, and accuracy is not needed.
@@ -1287,7 +1276,6 @@ static int serverCron(struct aeEventLoop *eventLoop, long long id, void *clientD
  * main loop of the event driven library, that is, before to sleep
  * for ready file descriptors. */
 static void beforeSleep(struct aeEventLoop *eventLoop) {
-    REDIS_NOTUSED(eventLoop);
 
     if (server.vm_enabled && listLength(server.io_ready_clients)) {
         listIter li;
@@ -1321,25 +1309,24 @@ static void createSharedObjects(void) {
     shared.err = createObject(REDIS_STRING,sdsnew("-ERR\r\n"));
     shared.emptybulk = createObject(REDIS_STRING,sdsnew("$0\r\n\r\n"));
     shared.czero = createObject(REDIS_STRING,sdsnew(":0\r\n"));
+
     shared.cone = createObject(REDIS_STRING,sdsnew(":1\r\n"));
     shared.nullbulk = createObject(REDIS_STRING,sdsnew("$-1\r\n"));
     shared.nullmultibulk = createObject(REDIS_STRING,sdsnew("*-1\r\n"));
     shared.emptymultibulk = createObject(REDIS_STRING,sdsnew("*0\r\n"));
     shared.pong = createObject(REDIS_STRING,sdsnew("+PONG\r\n"));
+    
     shared.queued = createObject(REDIS_STRING,sdsnew("+QUEUED\r\n"));
-    shared.wrongtypeerr = createObject(REDIS_STRING,sdsnew(
-        "-ERR Operation against a key holding the wrong kind of value\r\n"));
-    shared.nokeyerr = createObject(REDIS_STRING,sdsnew(
-        "-ERR no such key\r\n"));
-    shared.syntaxerr = createObject(REDIS_STRING,sdsnew(
-        "-ERR syntax error\r\n"));
-    shared.sameobjecterr = createObject(REDIS_STRING,sdsnew(
-        "-ERR source and destination objects are the same\r\n"));
-    shared.outofrangeerr = createObject(REDIS_STRING,sdsnew(
-        "-ERR index out of range\r\n"));
+    shared.wrongtypeerr = createObject(REDIS_STRING,sdsnew("-ERR Operation against a key holding the wrong kind of value\r\n"));
+    shared.nokeyerr = createObject(REDIS_STRING,sdsnew("-ERR no such key\r\n"));
+    shared.syntaxerr = createObject(REDIS_STRING,sdsnew("-ERR syntax error\r\n"));
+    shared.sameobjecterr = createObject(REDIS_STRING,sdsnew("-ERR source and destination objects are the same\r\n"));
+    
+    shared.outofrangeerr = createObject(REDIS_STRING,sdsnew("-ERR index out of range\r\n"));
     shared.space = createObject(REDIS_STRING,sdsnew(" "));
     shared.colon = createObject(REDIS_STRING,sdsnew(":"));
     shared.plus = createObject(REDIS_STRING,sdsnew("+"));
+
     shared.select0 = createStringObject("select 0\r\n",10);
     shared.select1 = createStringObject("select 1\r\n",10);
     shared.select2 = createStringObject("select 2\r\n",10);
@@ -1428,10 +1415,7 @@ static void initServer() {
     setupSigSegvAction();
 
     server.devnull = fopen("/dev/null","w");
-    if (server.devnull == NULL) {
-        redisLog(REDIS_WARNING, "Can't open /dev/null: %s", server.neterr);
-        exit(1);
-    }
+
     server.clients = listCreate();
     server.slaves = listCreate();
     server.monitors = listCreate();
@@ -1441,10 +1425,7 @@ static void initServer() {
     server.db = zmalloc(sizeof(redisDb)*server.dbnum);
     server.sharingpool = dictCreate(&setDictType,NULL);
     server.fd = anetTcpServer(server.neterr, server.port, server.bindaddr);
-    if (server.fd == -1) {
-        redisLog(REDIS_WARNING, "Opening TCP port: %s", server.neterr);
-        exit(1);
-    }
+
     for (j = 0; j < server.dbnum; j++) {
         server.db[j].dict = dictCreate(&dbDictType,NULL);
         server.db[j].expires = dictCreate(&keyptrDictType,NULL);
@@ -1464,16 +1445,10 @@ static void initServer() {
     server.stat_starttime = time(NULL);
     server.unixtime = time(NULL);
     aeCreateTimeEvent(server.el, 1, serverCron, NULL, NULL);
-    if (aeCreateFileEvent(server.el, server.fd, AE_READABLE,
-        acceptHandler, NULL) == AE_ERR) oom("creating file event");
+    aeCreateFileEvent(server.el, server.fd, AE_READABLE, acceptHandler, NULL);
 
     if (server.appendonly) {
         server.appendfd = open(server.appendfilename,O_WRONLY|O_APPEND|O_CREAT,0644);
-        if (server.appendfd == -1) {
-            redisLog(REDIS_WARNING, "Can't open the append-only file: %s",
-                strerror(errno));
-            exit(1);
-        }
     }
 
     if (server.vm_enabled) vmInit();
@@ -1509,10 +1484,7 @@ static void loadServerConfig(char *filename) {
     if (filename[0] == '-' && filename[1] == '\0')
         fp = stdin;
     else {
-        if ((fp = fopen(filename,"r")) == NULL) {
-            redisLog(REDIS_WARNING,"Fatal error, can't open config file");
-            exit(1);
-        }
+        fp = fopen(filename,"r");
     }
 
     while(fgets(buf,REDIS_CONFIGLINE_MAX+1,fp) != NULL) {
@@ -1679,10 +1651,7 @@ static void loadServerConfig(char *filename) {
     return;
 
 loaderr:
-    fprintf(stderr, "\n*** FATAL CONFIG FILE ERROR ***\n");
-    fprintf(stderr, "Reading the configuration file, at line %d\n", linenum);
-    fprintf(stderr, ">>> '%s'\n", line);
-    fprintf(stderr, "%s\n", err);
+
     exit(1);
 }
 
@@ -2320,11 +2289,12 @@ static void *dupClientReplyValue(void *o) {
 }
 
 static redisClient *createClient(int fd) {
+
     redisClient *c = zmalloc(sizeof(*c));
 
     anetNonBlock(NULL,fd);
     anetTcpNoDelay(NULL,fd);
-    if (!c) return NULL;
+
     selectDb(c,0);
     c->fd = fd;
     c->querybuf = sdsempty();
@@ -2340,19 +2310,19 @@ static redisClient *createClient(int fd) {
     c->authenticated = 0;
     c->replstate = REDIS_REPL_NONE;
     c->reply = listCreate();
+
     listSetFreeMethod(c->reply,decrRefCount);
     listSetDupMethod(c->reply,dupClientReplyValue);
     c->blockingkeys = NULL;
     c->blockingkeysnum = 0;
     c->io_keys = listCreate();
+
     listSetFreeMethod(c->io_keys,decrRefCount);
-    if (aeCreateFileEvent(server.el, c->fd, AE_READABLE,
-        readQueryFromClient, c) == AE_ERR) {
-        freeClient(c);
-        return NULL;
-    }
+    aeCreateFileEvent(server.el, c->fd, AE_READABLE, readQueryFromClient, c);
+    
     listAddNodeTail(server.clients,c);
     initClientMultiState(c);
+    
     return c;
 }
 
