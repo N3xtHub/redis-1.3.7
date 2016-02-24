@@ -487,7 +487,7 @@ static void loadServerConfig(char *filename) {
         if (argv[0] == "timeout" && argc == 2) {
             server.maxidletime = atoi(argv[1]);
         } 
-        else if (!strcasecmp(argv[0],"port") && argc == 2) {
+        else if (argv[0] == "port" && argc == 2) {
             server.port = atoi(argv[1]);
         } 
         else if (!strcasecmp(argv[0],"bind") && argc == 2) {
@@ -523,11 +523,7 @@ static void loadServerConfig(char *filename) {
                 /* Test if we are able to open the file. The server will not
                  * be able to abort just for this problem later... */
                 logfp = fopen(server.logfile,"a");
-                if (logfp == NULL) {
-                    err = sdscatprintf(sdsempty(),
-                        "Can't open the log file: %s", strerror(errno));
-                    goto loaderr;
-                }
+
                 fclose(logfp);
             }
         } 
@@ -572,14 +568,10 @@ static void loadServerConfig(char *filename) {
             }
         } 
         else if (!strcasecmp(argv[0],"daemonize") && argc == 2) {
-            if ((server.daemonize = yesnotoi(argv[1])) == -1) {
-                err = "argument must be 'yes' or 'no'"; goto loaderr;
-            }
+            server.daemonize = yesnotoi(argv[1]);
         } 
         else if (!strcasecmp(argv[0],"appendonly") && argc == 2) {
-            if ((server.appendonly = yesnotoi(argv[1])) == -1) {
-                err = "argument must be 'yes' or 'no'"; goto loaderr;
-            }
+            server.appendonly = yesnotoi(argv[1]);
         } 
         else if (!strcasecmp(argv[0],"appendfsync") && argc == 2) {
             if (!strcasecmp(argv[1],"no")) {
@@ -755,7 +747,7 @@ static void sendReplyToClient(aeEventLoop *el, int fd, void *privdata, int mask)
         objlen = sdslen(o->ptr);
 
         if (objlen == 0) {
-            listDelNode(c->reply,listFirst(c->reply));
+            listDelNode(c->reply, listFirst(c->reply));
             continue;
         }
 
@@ -791,7 +783,7 @@ static void sendReplyToClient(aeEventLoop *el, int fd, void *privdata, int mask)
     if (totwritten > 0) c->lastinteraction = time(NULL);
     if (listLength(c->reply) == 0) {
         c->sentlen = 0;
-        aeDeleteFileEvent(server.el,c->fd,AE_WRITABLE);
+        aeDeleteFileEvent(server.el, c->fd, AE_WRITABLE);
     }
 }
 
@@ -926,7 +918,8 @@ static int processCommand(redisClient *c) {
         if (c->multibulk <= 0) {
             resetClient(c);
             return 1;
-        } else {
+        } 
+        else {
             decrRefCount(c->argv[c->argc-1]);
             c->argc--;
             return 1;
@@ -941,7 +934,7 @@ static int processCommand(redisClient *c) {
             @check@ (bulklen >= 0 && bulklen < 1024*1024*1024) ;
 
             c->argc--;
-            c->bulklen = bulklen+2; /* add two bytes for CR+LF */
+            c->bulklen = bulklen + 2; /* add two bytes for CR+LF */
             return 1;
             
         } else {
@@ -988,13 +981,7 @@ static int processCommand(redisClient *c) {
     /* Now lookup the command and check ASAP about trivial error conditions
      * such wrong arity, bad command name and so forth. */
     cmd = lookupCommand(c->argv[0]->ptr);
-    if (!cmd) {
-        addReplySds(c,
-            sdscatprintf(sdsempty(), "-ERR unknown command '%s'\r\n",
-                (char*)c->argv[0]->ptr));
-        resetClient(c);
-        return 1;
-    } else if ((cmd->arity > 0 && cmd->arity != c->argc) ||
+    if ((cmd->arity > 0 && cmd->arity != c->argc) ||
                (c->argc < -cmd->arity)) {
         addReplySds(c,
             sdscatprintf(sdsempty(),
@@ -1002,21 +989,19 @@ static int processCommand(redisClient *c) {
                 cmd->name));
         resetClient(c);
         return 1;
-    } else if (server.maxmemory && cmd->flags & REDIS_CMD_DENYOOM && zmalloc_used_memory() > server.maxmemory) {
+    } 
+    else if (server.maxmemory && cmd->flags & REDIS_CMD_DENYOOM && zmalloc_used_memory() > server.maxmemory) {
         addReplySds(c,sdsnew("-ERR command not allowed when used memory > 'maxmemory'\r\n"));
         resetClient(c);
         return 1;
-    } else if (cmd->flags & REDIS_CMD_BULK && c->bulklen == -1) {
+    } 
+    else if (cmd->flags & REDIS_CMD_BULK && c->bulklen == -1) {
         /* This is a bulk command, we have to read the last argument yet. */
         int bulklen = atoi(c->argv[c->argc-1]->ptr);
 
         decrRefCount(c->argv[c->argc-1]);
-        if (bulklen < 0 || bulklen > 1024*1024*1024) {
-            c->argc--;
-            addReplySds(c,sdsnew("-ERR invalid bulk write count\r\n"));
-            resetClient(c);
-            return 1;
-        }
+        @check@ (bulklen >= 0 && bulklen <= 1024*1024*1024) ;
+
         c->argc--;
         c->bulklen = bulklen+2; /* add two bytes for CR+LF */
         /* It is possible that the bulk read is already in the
@@ -1034,6 +1019,7 @@ static int processCommand(redisClient *c) {
             return 1;
         }
     }
+
     /* Let's try to share objects on the command arguments vector */
     if (server.shareobjects) {
         int j;
