@@ -2,10 +2,6 @@
  *
  */
 
-#ifndef __SDS_H
-#define __SDS_H
-
-#include <sys/types.h>
 
 typedef char *sds;
 
@@ -42,4 +38,4 @@ sds *sdssplitlen(char *s, int len, char *sep, int seplen, int *count);
 void sdstolower(sds s);
 void sdstoupper(sds s);
 
-#endif
+

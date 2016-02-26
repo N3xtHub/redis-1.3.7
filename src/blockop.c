@@ -45,7 +45,7 @@ static void blockForKeys(redisClient *c, robj **keys, int numkeys, time_t timeou
         incrRefCount(keys[j]);
 
         /* And in the other "side", to map keys -> clients */
-        de = dictFind(c->db->blockingkeys,keys[j]);
+        de = dictFind(c->db->blockingkeys, keys[j]);
         if (de == NULL) {
             int retval;
 
@@ -53,11 +53,11 @@ static void blockForKeys(redisClient *c, robj **keys, int numkeys, time_t timeou
             l = listCreate();
             retval = dictAdd(c->db->blockingkeys,keys[j],l);
             incrRefCount(keys[j]);
-            assert(retval == DICT_OK);
         } else {
             l = dictGetEntryVal(de);
         }
-        listAddNodeTail(l,c);
+
+        listAddNodeTail(l, c);
     }
     /* Mark the client as a blocked client */
     c->flags |= REDIS_BLOCKED;
@@ -75,7 +75,7 @@ static void unblockClientWaitingData(redisClient *c) {
     for (j = 0; j < c->blockingkeysnum; j++) {
         /* Remove this client from the list of clients waiting for this key. */
         de = dictFind(c->db->blockingkeys,c->blockingkeys[j]);
-        assert(de != NULL);
+        
         l = dictGetEntryVal(de);
         listDelNode(l,listSearchKey(l,c));
         /* If the list is empty we need to remove it to avoid wasting memory */
@@ -116,7 +116,7 @@ static int handleClientsWaitingListPush(redisClient *c, robj *key, robj *ele) {
     if (de == NULL) return 0;
     l = dictGetEntryVal(de);
     ln = listFirst(l);
-    assert(ln != NULL);
+    
     receiver = ln->value;
 
     addReplySds(receiver,sdsnew("*2\r\n"));

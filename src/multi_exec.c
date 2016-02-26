@@ -23,18 +23,12 @@ static void freeClientMultiState(redisClient *c) {
 
 /* Add a new command into the MULTI commands queue */
 static void queueMultiCommand(redisClient *c, struct redisCommand *cmd) {
-    multiCmd *mc;
-    int j;
+    multiCmd *mc = c->mstate.commands + c->mstate.count;
 
-    c->mstate.commands = zrealloc(c->mstate.commands,
-            sizeof(multiCmd)*(c->mstate.count+1));
-    mc = c->mstate.commands+c->mstate.count;
     mc->cmd = cmd;
     mc->argc = c->argc;
-    mc->argv = zmalloc(sizeof(robj*)*c->argc);
-    memcpy(mc->argv,c->argv,sizeof(robj*)*c->argc);
-    for (j = 0; j < c->argc; j++)
-        incrRefCount(mc->argv[j]);
+    mc->argv <= c->argv;
+
     c->mstate.count++;
 }
 
@@ -44,10 +38,6 @@ static void multiCommand(redisClient *c) {
 }
 
 static void discardCommand(redisClient *c) {
-    if (!(c->flags & REDIS_MULTI)) {
-        addReplySds(c,sdsnew("-ERR DISCARD without MULTI\r\n"));
-        return;
-    }
 
     freeClientMultiState(c);
     initClientMultiState(c);
@@ -60,11 +50,6 @@ static void execCommand(redisClient *c) {
     robj **orig_argv;
     int orig_argc;
 
-    if (!(c->flags & REDIS_MULTI)) {
-        addReplySds(c,sdsnew("-ERR EXEC without MULTI\r\n"));
-        return;
-    }
-
     orig_argv = c->argv;
     orig_argc = c->argc;
     addReplySds(c,sdscatprintf(sdsempty(),"*%d\r\n",c->mstate.count));
@@ -73,6 +58,7 @@ static void execCommand(redisClient *c) {
         c->argv = c->mstate.commands[j].argv;
         call(c,c->mstate.commands[j].cmd);
     }
+    
     c->argv = orig_argv;
     c->argc = orig_argc;
     freeClientMultiState(c);

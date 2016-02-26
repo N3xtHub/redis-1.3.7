@@ -3,13 +3,13 @@
 /*============================ RDB saving/loading =========================== */
 
 static int rdbSaveType(FILE *fp, unsigned char type) {
-    if (fwrite(&type,1,1,fp) == 0) return -1;
+    fwrite(&type,1,1,fp);
     return 0;
 }
 
 static int rdbSaveTime(FILE *fp, time_t t) {
     int32_t t32 = (int32_t) t;
-    if (fwrite(&t32,4,1,fp) == 0) return -1;
+    fwrite(&t32,4,1,fp);
     return 0;
 }
 
@@ -20,18 +20,19 @@ static int rdbSaveLen(FILE *fp, uint32_t len) {
     if (len < (1<<6)) {
         /* Save a 6 bit len */
         buf[0] = (len&0xFF)|(REDIS_RDB_6BITLEN<<6);
-        if (fwrite(buf,1,1,fp) == 0) return -1;
+        fwrite(buf,1,1,fp);
+
     } else if (len < (1<<14)) {
         /* Save a 14 bit len */
         buf[0] = ((len>>8)&0xFF)|(REDIS_RDB_14BITLEN<<6);
         buf[1] = len&0xFF;
-        if (fwrite(buf,2,1,fp) == 0) return -1;
+        fwrite(buf,2,1,fp) ;
     } else {
         /* Save a 32 bit len */
         buf[0] = (REDIS_RDB_32BITLEN<<6);
-        if (fwrite(buf,1,1,fp) == 0) return -1;
+        fwrite(buf,1,1,fp);
         len = htonl(len);
-        if (fwrite(&len,4,1,fp) == 0) return -1;
+        fwrite(&len,4,1,fp);
     }
     return 0;
 }
@@ -82,24 +83,15 @@ static int rdbSaveLzfStringObject(FILE *fp, unsigned char *s, size_t len) {
     /* We require at least four bytes compression for this to be worth it */
     if (len <= 4) return 0;
     outlen = len-4;
-    if ((out = zmalloc(outlen+1)) == NULL) return 0;
+    
     comprlen = lzf_compress(s, len, out, outlen);
-    if (comprlen == 0) {
-        zfree(out);
-        return 0;
-    }
+    
     /* Data compressed! Let's save it on disk */
     byte = (REDIS_RDB_ENCVAL<<6)|REDIS_RDB_ENC_LZF;
-    if (fwrite(&byte,1,1,fp) == 0) goto writeerr;
-    if (rdbSaveLen(fp,comprlen) == -1) goto writeerr;
-    if (rdbSaveLen(fp,len) == -1) goto writeerr;
-    if (fwrite(out,comprlen,1,fp) == 0) goto writeerr;
-    zfree(out);
-    return comprlen;
 
-writeerr:
-    zfree(out);
-    return -1;
+    fp << byte + comprlen + len + out;
+    
+    return comprlen;
 }
 
 /* Save a string objet as [len][data] on disk. If the object is a string
@@ -111,7 +103,7 @@ static int rdbSaveRawString(FILE *fp, unsigned char *s, size_t len) {
     if (len <= 11) {
         unsigned char buf[5];
         if ((enclen = rdbTryIntegerEncoding((char*)s,len,buf)) > 0) {
-            if (fwrite(buf,enclen,1,fp) == 0) return -1;
+            fwrite(buf,enclen,1,fp) ;
             return 0;
         }
     }
@@ -647,20 +639,14 @@ static int rdbLoad(char *filename) {
     long long loadedkeys = 0;
 
     fp = fopen(filename,"r");
-    if (!fp) return REDIS_ERR;
-    if (fread(buf,9,1,fp) == 0) goto eoferr;
+    fread(buf,9,1,fp) ;
     buf[9] = '\0';
     if (memcmp(buf,"REDIS",5) != 0) {
         fclose(fp);
-        redisLog(REDIS_WARNING,"Wrong signature trying to load DB from file");
         return REDIS_ERR;
     }
+
     rdbver = atoi(buf+5);
-    if (rdbver != 1) {
-        fclose(fp);
-        redisLog(REDIS_WARNING,"Can't handle RDB format version %d",rdbver);
-        return REDIS_ERR;
-    }
     while(1) {
         robj *o;
 
@@ -674,26 +660,18 @@ static int rdbLoad(char *filename) {
         if (type == REDIS_EOF) break;
         /* Handle SELECT DB opcode as a special case */
         if (type == REDIS_SELECTDB) {
-            if ((dbid = rdbLoadLen(fp,NULL)) == REDIS_RDB_LENERR)
-                goto eoferr;
-            if (dbid >= (unsigned)server.dbnum) {
-                redisLog(REDIS_WARNING,"FATAL: Data file was created with a Redis server configured to handle more than %d databases. Exiting\n", server.dbnum);
-                exit(1);
-            }
-            db = server.db+dbid;
+            dbid = rdbLoadLen(fp,NULL);
+            db = server.db + dbid;
             d = db->dict;
             continue;
         }
         /* Read key */
-        if ((keyobj = rdbLoadStringObject(fp)) == NULL) goto eoferr;
+        keyobj = rdbLoadStringObject(fp);
         /* Read value */
-        if ((o = rdbLoadObject(type,fp)) == NULL) goto eoferr;
+        o = rdbLoadObject(type,fp);
         /* Add the new object in the hash table */
         retval = dictAdd(d,keyobj,o);
-        if (retval == DICT_ERR) {
-            redisLog(REDIS_WARNING,"Loading DB, duplicated key (%s) found! Unrecoverable error, exiting now.", keyobj->ptr);
-            exit(1);
-        }
+ 
         /* Set the expire time if needed */
         if (expiretime != -1) {
             setExpire(db,keyobj,expiretime);
@@ -712,10 +690,4 @@ static int rdbLoad(char *filename) {
     }
     fclose(fp);
     return REDIS_OK;
-
-eoferr: /* unexpected end of file is handled here with a fatal exit */
-    if (keyobj) decrRefCount(keyobj);
-    redisLog(REDIS_WARNING,"Short read or OOM loading DB. Unrecoverable error, aborting now.");
-    exit(1);
-    return REDIS_ERR; /* Just to avoid warning */
 }

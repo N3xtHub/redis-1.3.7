@@ -4,14 +4,6 @@
 
 #include "fmacros.h"
 
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <errno.h>
-#include <sys/time.h>
-#include <signal.h>
-#include <assert.h>
 
 #include "ae.h"
 #include "anet.h"
@@ -366,9 +358,7 @@ static void showLatencyReport(char *title) {
             }
         }
         printf("%.2f requests per second\n\n", reqpersec);
-    } else {
-        printf("%s: %.2f requests per second\n", title, reqpersec);
-    }
+    } 
 }
 
 static void prepareForBenchmark(void)

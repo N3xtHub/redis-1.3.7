@@ -10,14 +10,8 @@ static int syncWrite(int fd, char *ptr, ssize_t size, int timeout) {
     while(size) {
         if (aeWait(fd, AE_WRITABLE, 1000) & AE_WRITABLE) {
             nwritten = write(fd, ptr,size);
-            if (nwritten == -1) return -1;
             ptr += nwritten;
             size -= nwritten;
-        }
-
-        if ((time(NULL) - start) > timeout) {
-            errno = ETIMEDOUT;
-            return -1;
         }
     }
 
@@ -134,9 +128,8 @@ static void sendBulkToSlave(aeEventLoop *el, int fd, void *privdata, int mask) {
         bulkcount = sdscatprintf(sdsempty(), "$%lld\r\n", (unsigned long long)
             slave->repldbsize);
         write(fd,bulkcount, sdslen(bulkcount));
-
-        sdsfree(bulkcount);
     }
+
     lseek(slave->repldbfd,slave->repldboff,SEEK_SET);
     buflen = read(slave->repldbfd,buf,REDIS_IOBUF_LEN);
 
@@ -175,20 +168,10 @@ static void updateSlavesWaitingBgsave(int bgsaveerr) {
         } 
         else if (slave->replstate == REDIS_REPL_WAIT_BGSAVE_END) {
             struct redis_stat buf;
-           
-            if (bgsaveerr != REDIS_OK) {
-                freeClient(slave);
-                redisLog(REDIS_WARNING,"SYNC failed. BGSAVE child returned an error");
-                continue;
-            }
 
             slave->repldbfd = open(server.dbfilename, O_RDONLY);
 
-            if (slave->repldbfd == -1 || redis_fstat(slave->repldbfd, &buf) == -1) {
-                freeClient(slave);
-                redisLog(REDIS_WARNING,"SYNC failed. Can't open/stat DB after BGSAVE: %s", strerror(errno));
-                continue;
-            }
+            redis_fstat(slave->repldbfd, &buf) ;
 
             slave->repldboff = 0;
             slave->repldbsize = buf.st_size;
@@ -199,18 +182,7 @@ static void updateSlavesWaitingBgsave(int bgsaveerr) {
     }
 
     if (startbgsave) {
-        if (rdbSaveBackground(server.dbfilename) != REDIS_OK) {
-            listIter li;
-
-            listRewind(server.slaves, &li);
-            redisLog(REDIS_WARNING,"SYNC failed. BGSAVE failed");
-            while((ln = listNext(&li))) {
-                redisClient *slave = ln->value;
-
-                if (slave->replstate == REDIS_REPL_WAIT_BGSAVE_START)
-                    freeClient(slave);
-            }
-        }
+        rdbSaveBackground(server.dbfilename);
     }
 }
 
@@ -274,17 +246,18 @@ static int syncWithMaster(void) {
 }
 
 static void slaveofCommand(redisClient *c) {
-    if (!strcasecmp(c->argv[1]->ptr,"no") && !strcasecmp(c->argv[2]->ptr,"one")) {
+    if (c->argv[1] == "no" && c->argv[2] == "one") {
         if (server.masterhost) {
             sdsfree(server.masterhost);
             server.masterhost = NULL;
             if (server.master) freeClient(server.master);
             server.replstate = REDIS_REPL_NONE;
+
             redisLog(REDIS_NOTICE,"MASTER MODE enabled (user request)");
         }
     } 
     else {
-        sdsfree(server.masterhost);
+        
         server.masterhost = sdsdup(c->argv[1]->ptr);
         server.masterport = atoi(c->argv[2]->ptr);
         if (server.master) freeClient(server.master);

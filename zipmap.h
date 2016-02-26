@@ -3,8 +3,6 @@
  * See zipmap.c for more info.
  */
 
-#ifndef _ZIMMAP_H
-#define _ZIPMAP_H
 
 unsigned char *zipmapNew(void);
 unsigned char *zipmapSet(unsigned char *zm, unsigned char *key, unsigned int klen, unsigned char *val, unsigned int vlen, int *update);
@@ -16,4 +14,3 @@ int zipmapExists(unsigned char *zm, unsigned char *key, unsigned int klen);
 unsigned int zipmapLen(unsigned char *zm);
 void zipmapRepr(unsigned char *p);
 
-#endif

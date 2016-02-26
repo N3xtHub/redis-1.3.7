@@ -57,10 +57,8 @@ int main(int argc, char **argv) {
 
     if (server.daemonize) daemonize();
     initServer();
-    redisLog(REDIS_NOTICE,"Server started, Redis version " REDIS_VERSION);
-#ifdef __linux__
+   
     linuxOvercommitMemoryWarning();
-#endif
     start = time(NULL);
     if (server.appendonly) {
         loadAppendOnlyFile(server.appendfilename);
@@ -68,9 +66,9 @@ int main(int argc, char **argv) {
         rdbLoad(server.dbfilename);
     }
 
-    redisLog(REDIS_NOTICE,"The server is now ready to accept connections on port %d", server.port);
     aeSetBeforeSleepProc(server.el,beforeSleep);
     aeMain(server.el);
     aeDeleteEventLoop(server.el);
+   
     return 0;
 }

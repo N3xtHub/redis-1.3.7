@@ -4,19 +4,15 @@ static robj *createObject(int type, void *ptr) {
     robj *o;
 
     if (server.vm_enabled) pthread_mutex_lock(&server.obj_freelist_mutex);
+
     if (listLength(server.objfreelist)) {
         listNode *head = listFirst(server.objfreelist);
         o = listNodeValue(head);
         listDelNode(server.objfreelist,head);
+
         if (server.vm_enabled) pthread_mutex_unlock(&server.obj_freelist_mutex);
-    } else {
-        if (server.vm_enabled) {
-            pthread_mutex_unlock(&server.obj_freelist_mutex);
-            o = zmalloc(sizeof(*o));
-        } else {
-            o = zmalloc(sizeof(*o)-sizeof(struct redisObjectVM));
-        }
-    }
+    } 
+
     o->type = type;
     o->encoding = REDIS_ENCODING_RAW;
     o->ptr = ptr;
@@ -242,7 +238,6 @@ static robj *tryObjectSharing(robj *o) {
 
     if (o == NULL || server.shareobjects == 0) return o;
 
-    redisAssert(o->type == REDIS_STRING);
     de = dictFind(server.sharingpool,o);
     if (de) {
         robj *shared = dictGetEntryKey(de);
@@ -260,7 +255,7 @@ static robj *tryObjectSharing(robj *o) {
         if (dictSize(server.sharingpool) >=
                 server.sharingpoolsize) {
             de = dictGetRandomKey(server.sharingpool);
-            redisAssert(de != NULL);
+            
             c = ((unsigned long) dictGetEntryVal(de))-1;
             dictGetEntryVal(de) = (void*) c;
             if (c == 0) {

@@ -16,7 +16,7 @@ static void feedAppendOnlyFile(struct redisCommand *cmd, int dictid, robj **argv
 
         snprintf(seldb,sizeof(seldb),"%d",dictid);
         buf = sdscatprintf(buf,"*2\r\n$6\r\nSELECT\r\n$%lu\r\n%s\r\n",
-            (unsigned long)strlen(seldb),seldb);
+            (unsigned long)strlen(seldb), seldb);
         server.appendseldb = dictid;
     }
 
@@ -58,17 +58,7 @@ static void feedAppendOnlyFile(struct redisCommand *cmd, int dictid, robj **argv
      * there is much to do about the whole server stopping for power problems
      * or alike */
      nwritten = write(server.appendfd,buf,sdslen(buf));
-     if (nwritten != (signed)sdslen(buf)) {
-        /* Ooops, we are in troubles. The best thing to do for now is
-         * to simply exit instead to give the illusion that everything is
-         * working as expected. */
-         if (nwritten == -1) {
-            redisLog(REDIS_WARNING,"Exiting on error writing to the append-only file: %s",strerror(errno));
-         } else {
-            redisLog(REDIS_WARNING,"Exiting on short write while writing to the append-only file: %s",strerror(errno));
-         }
-         exit(1);
-    }
+
     /* If a background append only file rewriting is in progress we want to
      * accumulate the differences between the child DB and the current one
      * in a buffer, so that when the child process will do its work we
@@ -186,17 +176,6 @@ int loadAppendOnlyFile(char *filename) {
     fclose(fp);
     freeFakeClient(fakeClient);
     return REDIS_OK;
-
-readerr:
-    if (feof(fp)) {
-        redisLog(REDIS_WARNING,"Unexpected end of file reading the append only file");
-    } else {
-        redisLog(REDIS_WARNING,"Unrecoverable error reading the append only file: %s", strerror(errno));
-    }
-    exit(1);
-fmterr:
-    redisLog(REDIS_WARNING,"Bad file format reading the append only file");
-    exit(1);
 }
 
 /* Write an object into a file in the bulk format $<count>\r\n<payload>\r\n */
@@ -214,15 +193,12 @@ static int fwriteBulkObject(FILE *fp, robj *obj) {
         decrrc = 1;
     }
     snprintf(buf,sizeof(buf),"$%ld\r\n",(long)sdslen(obj->ptr));
-    if (fwrite(buf,strlen(buf),1,fp) == 0) goto err;
-    if (sdslen(obj->ptr) && fwrite(obj->ptr,sdslen(obj->ptr),1,fp) == 0)
-        goto err;
-    if (fwrite("\r\n",2,1,fp) == 0) goto err;
+    fwrite(buf,strlen(buf),1,fp);
+    fwrite(obj->ptr,sdslen(obj->ptr),1,fp);
+    fwrite("\r\n",2,1,fp);
+
     if (decrrc) decrRefCount(obj);
     return 1;
-err:
-    if (decrrc) decrRefCount(obj);
-    return 0;
 }
 
 /* Write binary-safe string into a file in the bulkformat
@@ -278,13 +254,14 @@ static int rewriteAppendOnlyFile(char *filename) {
         char selectcmd[] = "*2\r\n$6\r\nSELECT\r\n";
         redisDb *db = server.db+j;
         dict *d = db->dict;
+
         if (dictSize(d) == 0) continue;
         di = dictGetIterator(d);
 
 
         /* SELECT the new DB */
-        if (fwrite(selectcmd,sizeof(selectcmd)-1,1,fp) == 0) goto werr;
-        if (fwriteBulkLong(fp,j) == 0) goto werr;
+        fwrite(selectcmd,sizeof(selectcmd)-1,1,fp);
+        fwriteBulkLong(fp,j);
 
         /* Iterate this DB writing every entry */
         while((de = dictNext(di)) != NULL) {
@@ -311,11 +288,12 @@ static int rewriteAppendOnlyFile(char *filename) {
             if (o->type == REDIS_STRING) {
                 /* Emit a SET command */
                 char cmd[]="*3\r\n$3\r\nSET\r\n";
-                if (fwrite(cmd,sizeof(cmd)-1,1,fp) == 0) goto werr;
+                fwrite(cmd, sizeof(cmd)-1,1,fp);
                 /* Key and value */
-                if (fwriteBulkObject(fp,key) == 0) goto werr;
-                if (fwriteBulkObject(fp,o) == 0) goto werr;
-            } else if (o->type == REDIS_LIST) {
+                fwriteBulkObject(fp,key);
+                fwriteBulkObject(fp,o);
+            } 
+            else if (o->type == REDIS_LIST) {
                 /* Emit the RPUSHes needed to rebuild the list */
                 list *list = o->ptr;
                 listNode *ln;
@@ -326,11 +304,12 @@ static int rewriteAppendOnlyFile(char *filename) {
                     char cmd[]="*3\r\n$5\r\nRPUSH\r\n";
                     robj *eleobj = listNodeValue(ln);
 
-                    if (fwrite(cmd,sizeof(cmd)-1,1,fp) == 0) goto werr;
-                    if (fwriteBulkObject(fp,key) == 0) goto werr;
-                    if (fwriteBulkObject(fp,eleobj) == 0) goto werr;
+                    fwrite(cmd, sizeof(cmd)-1, 1, fp);
+                    fwriteBulkObject(fp,key);
+                    fwriteBulkObject(fp,eleobj);
                 }
-            } else if (o->type == REDIS_SET) {
+            } 
+            else if (o->type == REDIS_SET) {
                 /* Emit the SADDs needed to rebuild the set */
                 dict *set = o->ptr;
                 dictIterator *di = dictGetIterator(set);
@@ -340,12 +319,13 @@ static int rewriteAppendOnlyFile(char *filename) {
                     char cmd[]="*3\r\n$4\r\nSADD\r\n";
                     robj *eleobj = dictGetEntryKey(de);
 
-                    if (fwrite(cmd,sizeof(cmd)-1,1,fp) == 0) goto werr;
-                    if (fwriteBulkObject(fp,key) == 0) goto werr;
-                    if (fwriteBulkObject(fp,eleobj) == 0) goto werr;
+                    fwrite(cmd,sizeof(cmd)-1,1,fp) ;
+                    fwriteBulkObject(fp,key) ;
+                    fwriteBulkObject(fp,eleobj);
                 }
                 dictReleaseIterator(di);
-            } else if (o->type == REDIS_ZSET) {
+            } 
+            else if (o->type == REDIS_ZSET) {
                 /* Emit the ZADDs needed to rebuild the sorted set */
                 zset *zs = o->ptr;
                 dictIterator *di = dictGetIterator(zs->dict);
@@ -402,9 +382,9 @@ static int rewriteAppendOnlyFile(char *filename) {
                 char cmd[]="*3\r\n$8\r\nEXPIREAT\r\n";
                 /* If this key is already expired skip it */
                 if (expiretime < now) continue;
-                if (fwrite(cmd,sizeof(cmd)-1,1,fp) == 0) goto werr;
-                if (fwriteBulkObject(fp,key) == 0) goto werr;
-                if (fwriteBulkLong(fp,expiretime) == 0) goto werr;
+                fwrite(cmd,sizeof(cmd)-1,1,fp) ;
+                fwriteBulkObject(fp,key) ;
+                fwriteBulkLong(fp,expiretime) ;
             }
             if (swapped) decrRefCount(o);
         }
@@ -422,13 +402,6 @@ static int rewriteAppendOnlyFile(char *filename) {
     
     redisLog(REDIS_NOTICE,"SYNC append only file rewrite performed");
     return REDIS_OK;
-
-werr:
-    fclose(fp);
-    unlink(tmpfile);
-    redisLog(REDIS_WARNING,"Write error writing append only file on disk: %s", strerror(errno));
-    if (di) dictReleaseIterator(di);
-    return REDIS_ERR;
 }
 
 /* This is how rewriting of the append only file in background works:
@@ -457,19 +430,8 @@ static int rewriteAppendOnlyFileBackground(void) {
         snprintf(tmpfile,256,"temp-rewriteaof-bg-%d.aof", (int) getpid());
         if (rewriteAppendOnlyFile(tmpfile) == REDIS_OK) {
             _exit(0);
-        } else {
-            _exit(1);
-        }
+        } 
     } else {
-        /* Parent */
-        if (childpid == -1) {
-            redisLog(REDIS_WARNING,
-                "Can't rewrite append only file in background: fork: %s",
-                strerror(errno));
-            return REDIS_ERR;
-        }
-        redisLog(REDIS_NOTICE,
-            "Background append only file rewriting started by pid %d",childpid);
         server.bgrewritechildpid = childpid;
         /* We set appendseldb to -1 in order to force the next call to the
          * feedAppendOnlyFile() to issue a SELECT command, so the differences

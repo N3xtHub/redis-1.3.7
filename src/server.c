@@ -16,7 +16,7 @@ static void closeTimedoutClients(void) {
         } 
         else if (c->flags & REDIS_BLOCKED) {
             if (c->blockingto != 0 && c->blockingto < now) {
-                addReply(c,shared.nullmultibulk);
+                addReply(c, shared.nullmultibulk);
                 unblockClientWaitingData(c);
             }
         }
@@ -195,6 +195,7 @@ static int serverCron(struct aeEventLoop *eventLoop, long long id, void *clientD
             expired = 0;
             if (num > REDIS_EXPIRELOOKUPS_PER_CRON)
                 num = REDIS_EXPIRELOOKUPS_PER_CRON;
+
             while (num--) {
                 dictEntry *de;
                 time_t t;
@@ -447,7 +448,7 @@ static long long emptyDb() {
 
 static int yesnotoi(char *s) {
     if (s == "yes") return 1;
-    else if (s, == "no") return 0;
+    else if (s == "no") return 0;
     else return -1;
 }
 
@@ -484,141 +485,85 @@ static void loadServerConfig(char *filename) {
         sdstolower(argv[0]);
 
         /* Execute config directives */
-        if (argv[0] == "timeout" && argc == 2) {
-            server.maxidletime = atoi(argv[1]);
-        } 
-        else if (argv[0] == "port" && argc == 2) {
-            server.port = atoi(argv[1]);
-        } 
-        else if (!strcasecmp(argv[0],"bind") && argc == 2) {
-            server.bindaddr = zstrdup(argv[1]);
-        } 
-        else if (!strcasecmp(argv[0],"save") && argc == 3) {
-            int seconds = atoi(argv[1]);
-            int changes = atoi(argv[2]);
-            appendServerSaveParams(seconds,changes);
-        } 
-        else if (!strcasecmp(argv[0],"dir") && argc == 2) {
-            chdir(argv[1]);
-        } 
-        else if (!strcasecmp(argv[0],"loglevel") && argc == 2) {
-            if (!strcasecmp(argv[1],"debug")) server.verbosity = REDIS_DEBUG;
-            else if (!strcasecmp(argv[1],"verbose")) server.verbosity = REDIS_VERBOSE;
-            else if (!strcasecmp(argv[1],"notice")) server.verbosity = REDIS_NOTICE;
-            else if (!strcasecmp(argv[1],"warning")) server.verbosity = REDIS_WARNING;
-            else {
-                err = "Invalid log level. Must be one of debug, notice, warning";
-                goto loaderr;
-            }
-        } 
-        else if (!strcasecmp(argv[0],"logfile") && argc == 2) {
-            FILE *logfp;
+        switch (argv[0])
+        {
+            "timeout": server.maxidletime = atoi(argv[1]);
+        
+            "port": server.port = atoi(argv[1]);
+            
+            "bind": server.bindaddr = zstrdup(argv[1]);
+            
+            "save":
+                int seconds = atoi(argv[1]);
+                int changes = atoi(argv[2]);
+                appendServerSaveParams(seconds,changes);
+            
+            "dir": chdir(argv[1]);
+        
+            "loglevel":
+                switch(argv[1]):
+                    "debug": server.verbosity = REDIS_DEBUG;
+                    "verbose": server.verbosity = REDIS_VERBOSE;
+                    "notice": server.verbosity = REDIS_NOTICE;
+                    "warning": server.verbosity = REDIS_WARNING;
+            
+            "logfile":
+                FILE *logfp;
+                server.logfile = zstrdup(argv[1]);
+                if (server.logfile == "stdout") {
+                    zfree(server.logfile);
+                    server.logfile = NULL;
+                }
+                if (server.logfile) {
+                    /* Test if we are able to open the file. The server will not
+                     * be able to abort just for this problem later... */
+                    logfp = fopen(server.logfile,"a");
 
-            server.logfile = zstrdup(argv[1]);
-            if (!strcasecmp(server.logfile,"stdout")) {
-                zfree(server.logfile);
-                server.logfile = NULL;
-            }
-            if (server.logfile) {
-                /* Test if we are able to open the file. The server will not
-                 * be able to abort just for this problem later... */
-                logfp = fopen(server.logfile,"a");
+                    fclose(logfp);
+                }
+        
+            "databases": server.dbnum = atoi(argv[1]);
+        
+            "include": loadServerConfig(argv[1]);
+        
+            "maxclients": server.maxclients = atoi(argv[1]);
+            "maxmemory": server.maxmemory = strtoll(argv[1], NULL, 10);
+            "slaveof":
+                server.masterhost = sdsnew(argv[1]);
+                server.masterport = atoi(argv[2]);
+                server.replstate = REDIS_REPL_CONNECT;
+            
+            "masterauth": server.masterauth = zstrdup(argv[1]);
+        
+            "glueoutputbuf": server.glueoutputbuf = yesnotoi(argv[1]);
+        
+            "shareobjects": server.shareobjects = yesnotoi(argv[1]);
+        
+            "rdbcompression": server.rdbcompression = yesnotoi(argv[1]);
 
-                fclose(logfp);
-            }
-        } 
-        else if (!strcasecmp(argv[0],"databases") && argc == 2) {
-            server.dbnum = atoi(argv[1]);
-        } 
-        else if (!strcasecmp(argv[0],"include") && argc == 2) {
-            loadServerConfig(argv[1]);
-        } 
-        else if (!strcasecmp(argv[0],"maxclients") && argc == 2) {
-            server.maxclients = atoi(argv[1]);
-        } 
-        else if (!strcasecmp(argv[0],"maxmemory") && argc == 2) {
-            server.maxmemory = strtoll(argv[1], NULL, 10);
-        } 
-        else if (!strcasecmp(argv[0],"slaveof") && argc == 3) {
-            server.masterhost = sdsnew(argv[1]);
-            server.masterport = atoi(argv[2]);
-            server.replstate = REDIS_REPL_CONNECT;
-        } 
-        else if (!strcasecmp(argv[0],"masterauth") && argc == 2) {
-        	server.masterauth = zstrdup(argv[1]);
-        } 
-        else if (!strcasecmp(argv[0],"glueoutputbuf") && argc == 2) {
-            if ((server.glueoutputbuf = yesnotoi(argv[1])) == -1) {
-                err = "argument must be 'yes' or 'no'"; goto loaderr;
-            }
-        } 
-        else if (!strcasecmp(argv[0],"shareobjects") && argc == 2) {
-            if ((server.shareobjects = yesnotoi(argv[1])) == -1) {
-                err = "argument must be 'yes' or 'no'"; goto loaderr;
-            }
-        } 
-        else if (!strcasecmp(argv[0],"rdbcompression") && argc == 2) {
-            if ((server.rdbcompression = yesnotoi(argv[1])) == -1) {
-                err = "argument must be 'yes' or 'no'"; goto loaderr;
-            }
-        } else if (!strcasecmp(argv[0],"shareobjectspoolsize") && argc == 2) {
-            server.sharingpoolsize = atoi(argv[1]);
-            if (server.sharingpoolsize < 1) {
-                err = "invalid object sharing pool size"; goto loaderr;
-            }
-        } 
-        else if (!strcasecmp(argv[0],"daemonize") && argc == 2) {
-            server.daemonize = yesnotoi(argv[1]);
-        } 
-        else if (!strcasecmp(argv[0],"appendonly") && argc == 2) {
-            server.appendonly = yesnotoi(argv[1]);
-        } 
-        else if (!strcasecmp(argv[0],"appendfsync") && argc == 2) {
-            if (!strcasecmp(argv[1],"no")) {
-                server.appendfsync = APPENDFSYNC_NO;
-            } else if (!strcasecmp(argv[1],"always")) {
-                server.appendfsync = APPENDFSYNC_ALWAYS;
-            } else if (!strcasecmp(argv[1],"everysec")) {
-                server.appendfsync = APPENDFSYNC_EVERYSEC;
-            } else {
-                err = "argument must be 'no', 'always' or 'everysec'";
-                goto loaderr;
-            }
-        } else if (!strcasecmp(argv[0],"requirepass") && argc == 2) {
-            server.requirepass = zstrdup(argv[1]);
-        } else if (!strcasecmp(argv[0],"pidfile") && argc == 2) {
-            server.pidfile = zstrdup(argv[1]);
-        } else if (!strcasecmp(argv[0],"dbfilename") && argc == 2) {
-            server.dbfilename = zstrdup(argv[1]);
-        } else if (!strcasecmp(argv[0],"vm-enabled") && argc == 2) {
-            if ((server.vm_enabled = yesnotoi(argv[1])) == -1) {
-                err = "argument must be 'yes' or 'no'"; goto loaderr;
-            }
-        } else if (!strcasecmp(argv[0],"vm-swap-file") && argc == 2) {
-            zfree(server.vm_swap_file);
-            server.vm_swap_file = zstrdup(argv[1]);
-        } else if (!strcasecmp(argv[0],"vm-max-memory") && argc == 2) {
-            server.vm_max_memory = strtoll(argv[1], NULL, 10);
-        } else if (!strcasecmp(argv[0],"vm-page-size") && argc == 2) {
-            server.vm_page_size = strtoll(argv[1], NULL, 10);
-        } else if (!strcasecmp(argv[0],"vm-pages") && argc == 2) {
-            server.vm_pages = strtoll(argv[1], NULL, 10);
-        } else if (!strcasecmp(argv[0],"vm-max-threads") && argc == 2) {
-            server.vm_max_threads = strtoll(argv[1], NULL, 10);
-        } else if (!strcasecmp(argv[0],"hash-max-zipmap-entries") && argc == 2){
-            server.hash_max_zipmap_entries = strtol(argv[1], NULL, 10);
-        } else if (!strcasecmp(argv[0],"hash-max-zipmap-value") && argc == 2){
-            server.hash_max_zipmap_value = strtol(argv[1], NULL, 10);
-        } else if (!strcasecmp(argv[0],"vm-max-threads") && argc == 2) {
-            server.vm_max_threads = strtoll(argv[1], NULL, 10);
-        } else {
-            err = "Bad directive or wrong number of arguments"; goto loaderr;
-        }
+            "shareobjectspoolsize": server.sharingpoolsize = atoi(argv[1]);
+            "daemonize": server.daemonize = yesnotoi(argv[1]);
+            "appendonly": server.appendonly = yesnotoi(argv[1]);
+            
+            "appendfsync":
+                switch(argv[1]):
+                    "no": server.appendfsync = APPENDFSYNC_NO;
+                    "always": server.appendfsync = APPENDFSYNC_ALWAYS;
+                    "everysec": server.appendfsync = APPENDFSYNC_EVERYSEC;
+            "requirepass": server.requirepass = zstrdup(argv[1]);
+            
+            "pidfile":          server.pidfile = zstrdup(argv[1]);
+            "dbfilename":       server.dbfilename = zstrdup(argv[1]);
+            "vm-enabled":       server.vm_enabled = yesnotoi(argv[1]);
 
-        for (j = 0; j < argc; j++)
-            sdsfree(argv[j]);
-        zfree(argv);
-        sdsfree(line);
+            "vm-swap-file":     server.vm_swap_file = zstrdup(argv[1]);
+            "vm-max-memory":    server.vm_max_memory = strtoll(argv[1], NULL, 10);
+            "vm-page-size":     server.vm_page_size = strtoll(argv[1], NULL, 10);
+            "vm-pages":         server.vm_pages = strtoll(argv[1], NULL, 10);
+            "vm-max-threads":   server.vm_max_threads = strtoll(argv[1], NULL, 10);
+            "hash-max-zipmap-entries": server.hash_max_zipmap_entries = strtol(argv[1], NULL, 10);
+            "hash-max-zipmap-value": server.hash_max_zipmap_value = strtol(argv[1], NULL, 10);
+            "vm-max-threads": server.vm_max_threads = strtoll(argv[1], NULL, 10);
     }
 
     if (fp != stdin) fclose(fp);
@@ -710,7 +655,7 @@ static void glueReplyBuffersIfNeeded(redisClient *c) {
         o = ln->value;
         objlen = sdslen(o->ptr);
         if (copylen + objlen <= GLUEREPLY_UP_TO) {
-            memcpy(buf+copylen,o->ptr,objlen);
+            memcpy(buf+copylen, o->ptr, objlen);
             copylen += objlen;
             listDelNode(c->reply,ln);
         } else {
@@ -756,7 +701,6 @@ static void sendReplyToClient(aeEventLoop *el, int fd, void *privdata, int mask)
             nwritten = objlen - c->sentlen;
         } else {
             nwritten = write(fd, ((char*)o->ptr)+c->sentlen, objlen - c->sentlen);
-            if (nwritten <= 0) break;
         }
 
         c->sentlen += nwritten;
@@ -806,12 +750,6 @@ static void sendReplyToClientWritev(aeEventLoop *el, int fd, void *privdata, int
             o = listNodeValue(node);
             objlen = sdslen(o->ptr);
 
-            if (totwritten + objlen - offset > REDIS_MAX_WRITE_PER_EVENT) 
-                break;
-
-            if(ion == REDIS_WRITEV_IOVEC_COUNT)
-                break; /* no more iovecs */
-
             iov[ion].iov_base = ((char*)o->ptr) + offset;
             iov[ion].iov_len = objlen - offset;
             willwrite += objlen - offset;
@@ -819,14 +757,7 @@ static void sendReplyToClientWritev(aeEventLoop *el, int fd, void *privdata, int
             ion++;
         }
 
-        if(willwrite == 0)
-            break;
-
-        /* write all collected blocks at once */
-        if((nwritten = writev(fd, iov, ion)) < 0) {
-
-            break;
-        }
+        nwritten = writev(fd, iov, ion);
 
         totwritten += nwritten;
         offset = c->sentlen;

@@ -16,9 +16,6 @@ static int tryFreeOneObjectFromFreelist(void) {
         if (server.vm_enabled) pthread_mutex_unlock(&server.obj_freelist_mutex);
         zfree(o);
         return REDIS_OK;
-    } else {
-        if (server.vm_enabled) pthread_mutex_unlock(&server.obj_freelist_mutex);
-        return REDIS_ERR;
     }
 }
 

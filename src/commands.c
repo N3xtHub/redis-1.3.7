@@ -3,7 +3,7 @@
 /*================================== Commands =============================== */
 
 static void authCommand(redisClient *c) {
-    if (!server.requirepass || !strcmp(c->argv[1]->ptr, server.requirepass)) {
+    if (!server.requirepass || c->argv[1]->ptr == server.requirepass) {
       c->authenticated = 1;
       addReply(c,shared.ok);
     } else {
@@ -13,11 +13,11 @@ static void authCommand(redisClient *c) {
 }
 
 static void pingCommand(redisClient *c) {
-    addReply(c,shared.pong);
+    addReply(c, shared.pong);
 }
 
 static void echoCommand(redisClient *c) {
-    addReplyBulk(c,c->argv[1]);
+    addReplyBulk(c, c->argv[1]);
 }
 
 /*=================================== Strings =============================== */
@@ -25,28 +25,14 @@ static void echoCommand(redisClient *c) {
 static void setGenericCommand(redisClient *c, int nx) {
     int retval;
 
-    if (nx) deleteIfVolatile(c->db,c->argv[1]);
-    retval = dictAdd(c->db->dict,c->argv[1],c->argv[2]);
-    if (retval == DICT_ERR) {
-        if (!nx) {
-            /* If the key is about a swapped value, we want a new key object
-             * to overwrite the old. So we delete the old key in the database.
-             * This will also make sure that swap pages about the old object
-             * will be marked as free. */
-            if (server.vm_enabled && deleteIfSwapped(c->db,c->argv[1]))
-                incrRefCount(c->argv[1]);
-            dictReplace(c->db->dict,c->argv[1],c->argv[2]);
-            incrRefCount(c->argv[2]);
-        } else {
-            addReply(c,shared.czero);
-            return;
-        }
-    } else {
-        incrRefCount(c->argv[1]);
-        incrRefCount(c->argv[2]);
-    }
+    if (nx) deleteIfVolatile(c->db, c->argv[1]);
+    retval = dictAdd(c->db->dict, c->argv[1], c->argv[2]);
+    
+    incrRefCount(c->argv[1]);
+    incrRefCount(c->argv[2]);
+
     server.dirty++;
-    removeExpire(c->db,c->argv[1]);
+    removeExpire(c->db, c->argv[1]);
     addReply(c, nx ? shared.cone : shared.ok);
 }
 
@@ -59,18 +45,10 @@ static void setnxCommand(redisClient *c) {
 }
 
 static int getGenericCommand(redisClient *c) {
-    robj *o;
-    
-    if ((o = lookupKeyReadOrReply(c,c->argv[1],shared.nullbulk)) == NULL)
-        return REDIS_OK;
+    robj *o = lookupKeyReadOrReply(c,c->argv[1],shared.nullbulk);
 
-    if (o->type != REDIS_STRING) {
-        addReply(c,shared.wrongtypeerr);
-        return REDIS_ERR;
-    } else {
-        addReplyBulk(c,o);
-        return REDIS_OK;
-    }
+    addReplyBulk(c, o);
+    return REDIS_OK;
 }
 
 static void getCommand(redisClient *c) {
@@ -78,12 +56,10 @@ static void getCommand(redisClient *c) {
 }
 
 static void getsetCommand(redisClient *c) {
-    if (getGenericCommand(c) == REDIS_ERR) return;
-    if (dictAdd(c->db->dict,c->argv[1],c->argv[2]) == DICT_ERR) {
-        dictReplace(c->db->dict,c->argv[1],c->argv[2]);
-    } else {
-        incrRefCount(c->argv[1]);
-    }
+    getGenericCommand(c);
+    dictAdd(c->db->dict,c->argv[1],c->argv[2]);
+
+    incrRefCount(c->argv[1]);
     incrRefCount(c->argv[2]);
     server.dirty++;
     removeExpire(c->db,c->argv[1]);
@@ -133,13 +109,10 @@ static void msetGenericCommand(redisClient *c, int nx) {
 
         tryObjectEncoding(c->argv[j+1]);
         retval = dictAdd(c->db->dict,c->argv[j],c->argv[j+1]);
-        if (retval == DICT_ERR) {
-            dictReplace(c->db->dict,c->argv[j],c->argv[j+1]);
-            incrRefCount(c->argv[j+1]);
-        } else {
-            incrRefCount(c->argv[j]);
-            incrRefCount(c->argv[j+1]);
-        }
+        
+        incrRefCount(c->argv[j]);
+        incrRefCount(c->argv[j+1]);
+    
         removeExpire(c->db,c->argv[j]);
     }
     server.dirty += (c->argc-1)/2;
@@ -181,12 +154,8 @@ static void incrDecrCommand(redisClient *c, long long incr) {
     o = createObject(REDIS_STRING,sdscatprintf(sdsempty(),"%lld",value));
     tryObjectEncoding(o);
     retval = dictAdd(c->db->dict,c->argv[1],o);
-    if (retval == DICT_ERR) {
-        dictReplace(c->db->dict,c->argv[1],o);
-        removeExpire(c->db,c->argv[1]);
-    } else {
-        incrRefCount(c->argv[1]);
-    }
+
+    incrRefCount(c->argv[1]);
     server.dirty++;
     addReply(c,shared.colon);
     addReply(c,o);
@@ -227,13 +196,10 @@ static void appendCommand(redisClient *c) {
         dictEntry *de;
        
         de = dictFind(c->db->dict,c->argv[1]);
-        assert(de != NULL);
 
         o = dictGetEntryVal(de);
-        if (o->type != REDIS_STRING) {
-            addReply(c,shared.wrongtypeerr);
-            return;
-        }
+        @check@ (o->type == REDIS_STRING) ;
+
         /* If the object is specially encoded or shared we have to make
          * a copy */
         if (o->refcount != 1 || o->encoding != REDIS_ENCODING_RAW) {
@@ -473,16 +439,8 @@ static void renameGenericCommand(redisClient *c, int nx) {
 
     incrRefCount(o);
     deleteIfVolatile(c->db,c->argv[2]);
-    if (dictAdd(c->db->dict,c->argv[2],o) == DICT_ERR) {
-        if (nx) {
-            decrRefCount(o);
-            addReply(c,shared.czero);
-            return;
-        }
-        dictReplace(c->db->dict,c->argv[2],o);
-    } else {
-        incrRefCount(c->argv[2]);
-    }
+    dictAdd(c->db->dict,c->argv[2],o) ;
+    incrRefCount(c->argv[2]);
     deleteKey(c->db,c->argv[1]);
     server.dirty++;
     addReply(c,nx ? shared.cone : shared.ok);
@@ -504,10 +462,7 @@ static void moveCommand(redisClient *c) {
     /* Obtain source and target DB pointers */
     src = c->db;
     srcid = c->db->id;
-    if (selectDb(c,atoi(c->argv[2]->ptr)) == REDIS_ERR) {
-        addReply(c,shared.outofrangeerr);
-        return;
-    }
+    selectDb(c,atoi(c->argv[2]->ptr);
     dst = c->db;
     selectDb(c,srcid); /* Back to the source DB */
 
@@ -520,17 +475,10 @@ static void moveCommand(redisClient *c) {
 
     /* Check if the element exists and get a reference */
     o = lookupKeyWrite(c->db,c->argv[1]);
-    if (!o) {
-        addReply(c,shared.czero);
-        return;
-    }
 
     /* Try to add the element to the target DB */
     deleteIfVolatile(dst,c->argv[1]);
-    if (dictAdd(dst->dict,c->argv[1],o) == DICT_ERR) {
-        addReply(c,shared.czero);
-        return;
-    }
+    dictAdd(dst->dict,c->argv[1],o);
     incrRefCount(c->argv[1]);
     incrRefCount(o);
 

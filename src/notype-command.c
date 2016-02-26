@@ -155,36 +155,37 @@ static void sortCommand(redisClient *c) {
     /* The SORT command has an SQL-alike syntax, parse it */
     while(j < c->argc) {
         int leftargs = c->argc-j-1;
-        if (!strcasecmp(c->argv[j]->ptr,"asc")) {
-            desc = 0;
-        } else if (!strcasecmp(c->argv[j]->ptr,"desc")) {
-            desc = 1;
-        } else if (!strcasecmp(c->argv[j]->ptr,"alpha")) {
-            alpha = 1;
-        } else if (!strcasecmp(c->argv[j]->ptr,"limit") && leftargs >= 2) {
-            limit_start = atoi(c->argv[j+1]->ptr);
-            limit_count = atoi(c->argv[j+2]->ptr);
-            j+=2;
-        } else if (!strcasecmp(c->argv[j]->ptr,"store") && leftargs >= 1) {
-            storekey = c->argv[j+1];
-            j++;
-        } else if (!strcasecmp(c->argv[j]->ptr,"by") && leftargs >= 1) {
-            sortby = c->argv[j+1];
-            /* If the BY pattern does not contain '*', i.e. it is constant,
-             * we don't need to sort nor to lookup the weight keys. */
-            if (strchr(c->argv[j+1]->ptr,'*') == NULL) dontsort = 1;
-            j++;
-        } else if (!strcasecmp(c->argv[j]->ptr,"get") && leftargs >= 1) {
-            listAddNodeTail(operations,createSortOperation(
-                REDIS_SORT_GET,c->argv[j+1]));
-            getop++;
-            j++;
-        } else {
-            decrRefCount(sortval);
-            listRelease(operations);
-            addReply(c,shared.syntaxerr);
-            return;
+        string cmd = c->argv[j]->ptr;
+
+        switch(cmd)
+        {
+            "asc": desc = 0;
+            "desc": desc = 1;
+            "alpha": alpha = 1;
+            "limit":
+                limit_start = atoi(c->argv[j+1]->ptr);
+                limit_count = atoi(c->argv[j+2]->ptr);
+                j + =2;
+            "store":
+                storekey = c->argv[j+1];
+                j++;
+            "by":
+                sortby = c->argv[j+1];
+                /* If the BY pattern does not contain '*', i.e. it is constant,
+                * we don't need to sort nor to lookup the weight keys. */
+                if (strchr(c->argv[j+1]->ptr,'*') == NULL) dontsort = 1;
+                j++;
+            "get":
+                listAddNodeTail(operations,createSortOperation(REDIS_SORT_GET,c->argv[j+1]));
+                getop++;
+                j++;
+            default:
+                decrRefCount(sortval);
+                listRelease(operations);
+                addReply(c,shared.syntaxerr);
+                return;
         }
+
         j++;
     }
 
@@ -361,14 +362,6 @@ static void sortCommand(redisClient *c) {
         addReplySds(c,sdscatprintf(sdsempty(),":%d\r\n",outputlen));
     }
 
-    /* Cleanup */
-    decrRefCount(sortval);
-    listRelease(operations);
-    for (j = 0; j < vectorlen; j++) {
-        if (sortby && alpha && vector[j].u.cmpobj)
-            decrRefCount(vector[j].u.cmpobj);
-    }
-    zfree(vector);
 }
 
 /* Convert an amount of bytes into a human readable string in the form
